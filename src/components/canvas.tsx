@@ -21,9 +21,9 @@ export default function Canvas(props: WebGPUCanvasProps) {
         left: 0,
       }}
       shadows="percentage"
-      camera={{ position: [5, 4.5, 2.5], fov: 35 }}
+      camera={{ position: [7, 8, 4], fov: 35 }}
       background="#0f0f0f"
-      dpr={[devicePixelRatio, 2]}
+      dpr={[1, 2]}
       {...props}
     />
   );

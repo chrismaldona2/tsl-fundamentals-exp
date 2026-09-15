@@ -1,13 +1,17 @@
-import Floor from "./floor";
 import Lights from "./lights";
-import TorusKnot from "./torus-knot";
+import CameraRig from "./camera-rig";
+import NodeMaterialsTest from "../tests/01-node-materials";
+import VariablesTest from "../tests/02-variables";
+import GizmoManager from "./gizmo-manager";
 
 export default function Scene() {
   return (
-    <group>
+    <>
       <Lights />
-      <TorusKnot position-y={1} />
-      <Floor />
-    </group>
+      <CameraRig />
+      <GizmoManager />
+      <NodeMaterialsTest />
+      <VariablesTest position-z={-10} />
+    </>
   );
 }
