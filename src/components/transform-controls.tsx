@@ -22,21 +22,24 @@ export default function TransformControls({
   disabledModes = [],
 }: TransformControlsProps) {
   const controlsRef = useRef<TransformControlsImpl | null>(null);
-
   const camera = useThree((s) => s.camera);
   const renderer = useThree((s) => s.renderer);
   const scene = useThree((s) => s.scene);
   const controls = useThree((s) => s.controls);
   const globalMode = useGizmoStore((s) => s.mode);
 
+  // Active mode resolver
   const activeMode = useMemo(() => {
     if (!disabledModes.includes(globalMode)) return globalMode;
     if (!disabledModes.includes(defaultMode)) return defaultMode;
-
     const allModes: TransformControlsMode[] = ["translate", "rotate", "scale"];
     const safeMode = allModes.find((m) => !disabledModes.includes(m));
     return safeMode || "translate";
   }, [globalMode, defaultMode, disabledModes]);
+
+  useEffect(() => {
+    if (controlsRef.current) controlsRef.current.setMode(activeMode);
+  }, [activeMode]);
 
   // Instantiation / Unmount cleanup
   useEffect(() => {
@@ -73,11 +76,6 @@ export default function TransformControls({
       controlsRef.current = null;
     };
   }, [camera, renderer.domElement, scene, controls, size, objectRef]);
-
-  // Mode updates
-  useEffect(() => {
-    if (controlsRef.current) controlsRef.current.setMode(activeMode);
-  }, [activeMode]);
 
   return null;
 }

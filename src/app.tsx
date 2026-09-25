@@ -5,7 +5,7 @@ import Scene from "./components/scene";
 export default function App() {
   return (
     <Canvas>
-      <OrbitControls makeDefault />
+      <OrbitControls enablePan={false} makeDefault />
       <Scene />
     </Canvas>
   );
