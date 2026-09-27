@@ -3,6 +3,7 @@ import {
   type WebGPUCanvasProps,
 } from "@react-three/fiber/webgpu";
 import { NoToneMapping } from "three/webgpu";
+import { getInspector } from "../debug/inspector";
 
 export default function Canvas(props: WebGPUCanvasProps) {
   return (
@@ -11,6 +12,9 @@ export default function Canvas(props: WebGPUCanvasProps) {
         antialias: true,
         forceWebGL: false,
         toneMapping: NoToneMapping,
+      }}
+      onCreated={({ renderer }) => {
+        renderer.inspector = getInspector();
       }}
       style={{
         width: "100vw",

@@ -4,7 +4,9 @@ import { Mesh, SRGBColorSpace } from "three/webgpu";
 import { uv, positionLocal, vec4 } from "three/tsl";
 import TransformControls from "../components/transform-controls";
 
-export default function VariablesTest(props: ThreeElements["group"]) {
+export default function VariablesAndReferencesTest(
+  props: ThreeElements["group"],
+) {
   return (
     <group {...props}>
       <Floor />
@@ -14,7 +16,7 @@ export default function VariablesTest(props: ThreeElements["group"]) {
 }
 
 function Floor(props: ThreeElements["mesh"]) {
-  const diffuse = useTexture("/textures/floor-diffuse.jpg", (tex) => {
+  const diffuse = useTexture("/textures/grass.webp", (tex) => {
     tex.colorSpace = SRGBColorSpace;
   });
 
@@ -27,7 +29,7 @@ function Floor(props: ThreeElements["mesh"]) {
 
   return (
     <mesh rotation-x={-Math.PI / 2} receiveShadow {...props}>
-      <planeGeometry args={[10, 10, 25, 25]} />
+      <planeGeometry args={[10, 10, 1, 1]} />
       <meshStandardNodeMaterial transparent map={diffuse} {...nodes} />
     </mesh>
   );
