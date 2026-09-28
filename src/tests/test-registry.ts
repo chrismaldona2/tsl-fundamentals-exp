@@ -7,6 +7,7 @@ import TexturesTest from "./04-textures";
 import UniformsAndAttributesTest from "./05-uniforms-and-attributes";
 import NodeFunctionsTest from "./06-node-functions";
 import PatternsTest from "./07-patterns";
+import CoffeeTest from "./08-coffee-smoke";
 
 export const testRegistry: {
   id: string;
@@ -46,6 +47,11 @@ export const testRegistry: {
   {
     id: "07-patterns",
     component: PatternsTest,
-    position: [0, 0, -66],
+    position: [0, 0, -63],
+  },
+  {
+    id: "08-coffee-smoke",
+    component: CoffeeTest,
+    position: [0, 0, -74],
   },
 ];

@@ -55,11 +55,9 @@ function TorusKnot(props: ThreeElements["mesh"]) {
   }, []);
 
   return (
-    <>
-      <mesh castShadow receiveShadow {...props}>
-        <torusKnotGeometry args={[0.5, 0.24, 128, 32]} />
-        <meshStandardNodeMaterial {...nodes} />
-      </mesh>
-    </>
+    <mesh castShadow receiveShadow {...props}>
+      <torusKnotGeometry args={[0.5, 0.24, 128, 32]} />
+      <meshStandardNodeMaterial {...nodes} />
+    </mesh>
   );
 }
