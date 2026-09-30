@@ -3,7 +3,7 @@ import { type ThreeElements } from "@react-three/fiber/webgpu";
 import { useMemo } from "react";
 import { BufferAttribute, PlaneGeometry } from "three/webgpu";
 import { uv, positionWorld, time, mix, bufferAttribute } from "three/tsl";
-import { folder, useDebugUniforms } from "../hooks/use-debug-uniforms";
+import { folder, useDebugControls } from "../debug/use-debug-controls";
 
 export default function UniformsAndAttributesTest(
   props: ThreeElements["group"],
@@ -55,7 +55,7 @@ function Floor(props: ThreeElements["mesh"]) {
 }
 
 function TorusKnot(props: ThreeElements["mesh"]) {
-  const { TorusKnot } = useDebugUniforms(
+  const { TorusKnot } = useDebugControls(
     "📝 05 - Uniform and Attributes",
     {
       TorusKnot: folder("Torus Knot", {
@@ -65,6 +65,7 @@ function TorusKnot(props: ThreeElements["mesh"]) {
           max: 10,
           step: 0.1,
           name: "Stripe Frequency",
+          uniform: true,
         },
         speed: {
           value: 0.5,
@@ -72,9 +73,10 @@ function TorusKnot(props: ThreeElements["mesh"]) {
           max: 4,
           step: 0.1,
           name: "Animation Speed",
+          uniform: true,
         },
-        topColor: { value: "#d2377a", name: "Top Color" },
-        bottomColor: { value: "#258d5d", name: "Bottom Color" },
+        topColor: { value: "#d2377a", name: "Top Color", uniform: true },
+        bottomColor: { value: "#258d5d", name: "Bottom Color", uniform: true },
       }),
     },
     { collapsed: true },

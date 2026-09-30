@@ -2,7 +2,7 @@ import { type ThreeElements } from "@react-three/fiber/webgpu";
 import { useMemo } from "react";
 import { uv, float, vec3, vec2, bool, Fn, If, uint, Loop } from "three/tsl";
 import type { Node } from "three/webgpu";
-import { useDebugUniforms } from "../hooks/use-debug-uniforms";
+import { useDebugControls } from "../debug/use-debug-controls";
 
 export default function NodeFunctionsTest(props: ThreeElements["group"]) {
   return (
@@ -98,16 +98,18 @@ const circles = Fn(
 );
 
 function Floor(props: ThreeElements["mesh"]) {
-  const uniforms = useDebugUniforms(
+  const uniforms = useDebugControls(
     "🧩 06 - Node Functions",
     {
       invert: {
         name: "Invert",
         value: false,
+        uniform: true,
       },
       discard: {
         name: "Discard",
         value: false,
+        uniform: true,
       },
       radius: {
         name: "Radius",
@@ -115,6 +117,7 @@ function Floor(props: ThreeElements["mesh"]) {
         min: 0,
         max: 1,
         step: 0.001,
+        uniform: true,
       },
       thickness: {
         name: "Thickness",
@@ -122,6 +125,7 @@ function Floor(props: ThreeElements["mesh"]) {
         min: 0,
         max: 0.1,
         step: 0.01,
+        uniform: true,
       },
       count: {
         name: "Count",
@@ -129,6 +133,7 @@ function Floor(props: ThreeElements["mesh"]) {
         min: 0,
         max: 15,
         step: 1,
+        uniform: true,
       },
     },
     { collapsed: true },
