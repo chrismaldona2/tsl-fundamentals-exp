@@ -2,11 +2,21 @@ import type { Color, Vector2, Vector3, Vector4 } from "three";
 import type { UniformNode } from "three/webgpu";
 
 // API
-export type PlainVector = { x: number; y: number; z?: number; w?: number };
+export type PlainVector =
+  | { x: number; y: number; z?: never; w?: never }
+  | { x: number; y: number; z: number; w?: never }
+  | { x: number; y: number; z: number; w: number };
+
 export type AnyVectorInput = Vector2 | Vector3 | Vector4 | PlainVector;
+
 export type AnyVectorOutput = Vector2 | Vector3 | Vector4;
 
-export type FolderOptions = { readonly collapsed?: boolean };
+export type OptionValue = string | number | boolean;
+
+export type FolderOptions = {
+  /** Determines if the folder starts closed on the initial render. */
+  readonly collapsed?: boolean;
+};
 
 export type FolderWrapper<T> = {
   readonly isFolderWrapper: true;
@@ -19,6 +29,14 @@ export type BaseControl<TInput, TOutput = TInput> = {
   readonly value: TInput;
   readonly name?: string;
   readonly onChange?: (value: TOutput) => void;
+
+  /**
+   * When `true`, the returned value is a Three.js TSL UniformNode ready to use in shaders.
+   *
+   * When `false`, it returns a plain `{ value }` state container.
+   *
+   * Defaults to true.
+   */
   readonly uniform?: boolean;
 };
 
@@ -28,14 +46,19 @@ export type NumberControl = BaseControl<number> & {
   readonly step?: number;
 };
 
-export type OptionsControl<T = unknown> = BaseControl<T> & {
-  readonly options: readonly T[] | Record<string, T>;
-};
+export type OptionsControl<T extends OptionValue = OptionValue> =
+  BaseControl<T> & {
+    readonly options: readonly T[] | Record<string, T>;
+  };
 
 export type ColorControl = BaseControl<`#${string}` | Color>;
+
 export type BooleanControl = BaseControl<boolean>;
+
 export type StringControl = BaseControl<string>;
+
 export type VectorControl = BaseControl<AnyVectorInput, AnyVectorOutput>;
+
 export type ButtonControl = () => void;
 
 export type ControlConfig =
@@ -63,22 +86,17 @@ export type DebugSchema = {
 // Inference logic
 type ExtractNodeType<T> = T extends `#${string}` | Color
   ? UniformNode<"color", Color>
-  : T extends Vector2 | { x: number; y: number; z?: never; w?: never }
-    ? UniformNode<"vec2", Vector2>
-    : T extends Vector3 | { x: number; y: number; z: number; w?: never }
+  : T extends Vector4 | { x: number; y: number; z: number; w: number }
+    ? UniformNode<"vec4", Vector4>
+    : T extends Vector3 | { x: number; y: number; z: number }
       ? UniformNode<"vec3", Vector3>
-      : T extends Vector4 | { x: number; y: number; z: number; w: number }
-        ? UniformNode<"vec4", Vector4>
-        : T extends PlainVector
-          ?
-              | UniformNode<"vec2", Vector2>
-              | UniformNode<"vec3", Vector3>
-              | UniformNode<"vec4", Vector4>
-          : T extends boolean
-            ? UniformNode<"bool", boolean>
-            : T extends number
-              ? UniformNode<"float", number>
-              : { value: T };
+      : T extends Vector2 | { x: number; y: number }
+        ? UniformNode<"vec2", Vector2>
+        : T extends boolean
+          ? UniformNode<"bool", boolean>
+          : T extends number
+            ? UniformNode<"float", number>
+            : { value: T };
 
 export type MapValueToNode<T> = T extends ButtonControl
   ? never
@@ -88,11 +106,10 @@ export type MapValueToNode<T> = T extends ButtonControl
       ? V extends PlainVector
         ? { value: AnyVectorOutput }
         : { value: V }
-      : T extends BaseControl<infer V, any>
+      : T extends BaseControl<infer V, infer _>
         ? ExtractNodeType<V>
         : ExtractNodeType<T>;
 
-// The final mapped result returned by the hook
 export type DebugControlsResult<T> = {
   -readonly [K in keyof T as T[K] extends ButtonControl
     ? never
@@ -121,45 +138,39 @@ export type NormalizedControl =
       step?: number;
       name: string;
       uniform: boolean;
-      onChange?: (v: number) => void;
     }
   | {
       kind: "boolean";
       value: boolean;
       name: string;
       uniform: boolean;
-      onChange?: (v: boolean) => void;
     }
   | {
       kind: "string";
       value: string;
       name: string;
       uniform: boolean;
-      onChange?: (v: string) => void;
     }
   | {
       kind: "color";
       value: Color;
       name: string;
       uniform: boolean;
-      onChange?: (v: Color | `#${string}`) => void;
     }
   | {
       kind: "vector";
       value: AnyVectorOutput;
       name: string;
       uniform: boolean;
-      onChange?: (v: AnyVectorOutput) => void;
     }
   | {
       kind: "options";
-      value: unknown;
-      options: readonly unknown[] | Record<string, unknown>;
+      value: OptionValue;
+      options: readonly OptionValue[] | Record<string, OptionValue>;
       name: string;
       uniform: boolean;
-      onChange?: (v: unknown) => void;
     }
-  | { kind: "button"; name: string; onClick: () => void };
+  | { kind: "button"; name: string };
 
 export type NormalizedFolder = {
   kind: "folder";

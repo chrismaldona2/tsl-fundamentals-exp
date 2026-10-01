@@ -4,6 +4,11 @@ export type DebugFolder = ReturnType<Inspector["createParameters"]>;
 
 let inspector: Inspector | null = null;
 
+/**
+ * Retrieves the singleton instance of the Three.js Inspector.
+ *
+ * Initializes the DOM element and necessary event listeners on the first call.
+ */
 export function getInspector() {
   if (!inspector) {
     inspector = new Inspector();
@@ -27,10 +32,16 @@ export function getInspector() {
   return inspector;
 }
 
+/**
+ * Creates a new root-level folder in the Inspector UI.
+ */
 export function createDebugFolder(name: string): DebugFolder {
   return getInspector().createParameters(name);
 }
 
+/**
+ * Removes a folder from the DOM and cleans up its internal Inspector references.
+ */
 export function destroyDebugFolder(folder: DebugFolder) {
   const inst = getInspector();
 

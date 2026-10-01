@@ -9,7 +9,7 @@ export default function Canvas(props: WebGPUCanvasProps) {
   return (
     <FiberCanvas
       renderer={{
-        antialias: true,
+        antialias: false,
         forceWebGL: false,
         toneMapping: NoToneMapping,
       }}
@@ -25,7 +25,7 @@ export default function Canvas(props: WebGPUCanvasProps) {
         left: 0,
       }}
       shadows="percentage"
-      camera={{ position: [7, 8, 4], fov: 35 }}
+      camera={{ position: [10, 11, 7], fov: 35 }}
       background="#0f0f0f"
       dpr={[1, 2]}
       {...props}
