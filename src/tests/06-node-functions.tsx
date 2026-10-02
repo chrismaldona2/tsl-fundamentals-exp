@@ -153,7 +153,6 @@ function Floor(props: ThreeElements["mesh"]) {
     );
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
 
-    console.log("shader");
     return {
       colorNode,
       opacityNode,

@@ -28,7 +28,6 @@ export type FolderWrapper<T> = {
 export type BaseControl<TInput, TOutput = TInput> = {
   readonly value: TInput;
   readonly name?: string;
-  readonly onChange?: (value: TOutput) => void;
 
   /**
    * When `true`, the returned value is a Three.js TSL UniformNode ready to use in shaders.
@@ -38,6 +37,7 @@ export type BaseControl<TInput, TOutput = TInput> = {
    * Defaults to true.
    */
   readonly uniform?: boolean;
+  onChange?(value: TOutput): void;
 };
 
 export type NumberControl = BaseControl<number> & {
@@ -57,7 +57,29 @@ export type BooleanControl = BaseControl<boolean>;
 
 export type StringControl = BaseControl<string>;
 
-export type VectorControl = BaseControl<AnyVectorInput, AnyVectorOutput>;
+export type VectorBounds =
+  | number
+  | {
+      readonly x?: number;
+      readonly y?: number;
+      readonly z?: number;
+      readonly w?: number;
+    };
+
+export type VectorLabels = {
+  readonly x?: string;
+  readonly y?: string;
+  readonly z?: string;
+  readonly w?: string;
+};
+
+export type VectorControl = BaseControl<AnyVectorInput, AnyVectorOutput> & {
+  readonly min?: VectorBounds;
+  readonly max?: VectorBounds;
+  readonly step?: VectorBounds;
+  readonly labels?: VectorLabels;
+  readonly collapsed?: boolean;
+};
 
 export type ButtonControl = () => void;
 
@@ -162,6 +184,11 @@ export type NormalizedControl =
       value: AnyVectorOutput;
       name: string;
       uniform: boolean;
+      min?: VectorBounds;
+      max?: VectorBounds;
+      step?: VectorBounds;
+      collapsed?: boolean;
+      labels?: VectorLabels;
     }
   | {
       kind: "options";

@@ -145,13 +145,53 @@ function renderControl(
       const state = nodeState as StateContainer<AnyVectorOutput>;
       const vec = state.value;
       const vecFolder = folder.addFolder(control.name);
+      if (control.collapsed) vecFolder.close();
 
       const triggerChange = () => getLatestOnChange(schemaRef, path)?.(vec);
 
-      if ("x" in vec) vecFolder.add(vec, "x").onChange(triggerChange);
-      if ("y" in vec) vecFolder.add(vec, "y").onChange(triggerChange);
-      if ("z" in vec) vecFolder.add(vec, "z").onChange(triggerChange);
-      if ("w" in vec) vecFolder.add(vec, "w").onChange(triggerChange);
+      const getBound = (
+        axis: "x" | "y" | "z" | "w",
+        bound?: typeof control.min,
+      ) => {
+        if (typeof bound === "number") return bound;
+        if (typeof bound === "object" && bound !== null) return bound[axis];
+        return undefined;
+      };
+
+      const addComponent = <K extends "x" | "y" | "z" | "w">(axis: K) => {
+        const axMin = getBound(axis, control.min);
+        const axMax = getBound(axis, control.max);
+        const axStep = getBound(axis, control.step);
+
+        const target = vec as Record<K, number>;
+
+        let addedControl;
+        if (axStep !== undefined) {
+          addedControl = vecFolder.add(
+            target,
+            axis,
+            axMin ?? 0,
+            axMax ?? 1,
+            axStep,
+          );
+        } else if (axMax !== undefined) {
+          addedControl = vecFolder.add(target, axis, axMin ?? 0, axMax);
+        } else if (axMin !== undefined) {
+          addedControl = vecFolder.add(target, axis, axMin);
+        } else {
+          addedControl = vecFolder.add(target, axis);
+        }
+
+        const label = control.labels?.[axis];
+        if (label !== undefined) addedControl.name(label);
+
+        addedControl.onChange(triggerChange);
+      };
+
+      if ("x" in vec) addComponent("x");
+      if ("y" in vec) addComponent("y");
+      if ("z" in vec) addComponent("z");
+      if ("w" in vec) addComponent("w");
       break;
     }
 

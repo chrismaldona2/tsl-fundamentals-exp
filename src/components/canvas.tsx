@@ -2,7 +2,7 @@ import {
   Canvas as FiberCanvas,
   type WebGPUCanvasProps,
 } from "@react-three/fiber/webgpu";
-import { NoToneMapping } from "three/webgpu";
+import { CineonToneMapping } from "three/webgpu";
 import { getInspector } from "../debug/inspector";
 
 export default function Canvas(props: WebGPUCanvasProps) {
@@ -11,7 +11,7 @@ export default function Canvas(props: WebGPUCanvasProps) {
       renderer={{
         antialias: false,
         forceWebGL: false,
-        toneMapping: NoToneMapping,
+        toneMapping: CineonToneMapping,
       }}
       onCreated={({ renderer }) => {
         renderer.inspector = getInspector();

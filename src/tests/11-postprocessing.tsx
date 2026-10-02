@@ -1,7 +1,7 @@
 import { useTexture, type ThreeElements } from "@react-three/fiber/webgpu";
 import { useLayoutEffect, useMemo } from "react";
 import { type Mesh, SRGBColorSpace } from "three/webgpu";
-import { uv } from "three/tsl";
+import { mrt, output, uv, vec4 } from "three/tsl";
 import { useGLTF } from "@react-three/drei/webgpu";
 
 export default function PostProcessingLesson(props: ThreeElements["group"]) {
@@ -20,8 +20,11 @@ function Floor(props: ThreeElements["mesh"]) {
 
   const nodes = useMemo(() => {
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
+    const mrtNode = mrt({ output, normal: vec4(0) });
+
     return {
       opacityNode,
+      mrtNode,
     };
   }, []);
 

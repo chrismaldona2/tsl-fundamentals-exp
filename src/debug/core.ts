@@ -10,6 +10,7 @@ import type {
   PlainVector,
   AnyVectorOutput,
   OptionValue,
+  VectorControl,
 } from "./types";
 import { uniform } from "three/tsl";
 
@@ -62,6 +63,15 @@ function normalizeNode(key: string, value: unknown): NormalizedNode {
   const base = { name, uniform };
 
   // Map values
+  if (isOptionsConfig(value)) {
+    return {
+      kind: "options",
+      value: value.value,
+      options: value.options,
+      ...base,
+    };
+  }
+
   if (typeof raw === "number") {
     const config = isNumberConfig(value) ? value : undefined;
     return {
@@ -105,14 +115,16 @@ function normalizeNode(key: string, value: unknown): NormalizedNode {
       }
     }
 
-    return { kind: "vector", value: vecValue, ...base };
-  }
+    const config = isConfig ? (value as VectorControl) : undefined;
 
-  if (isOptionsConfig(value)) {
     return {
-      kind: "options",
-      value: value.value,
-      options: value.options,
+      kind: "vector",
+      value: vecValue,
+      min: config?.min,
+      max: config?.max,
+      step: config?.step,
+      labels: config?.labels,
+      collapsed: config?.collapsed,
       ...base,
     };
   }
