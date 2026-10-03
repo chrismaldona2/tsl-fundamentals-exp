@@ -9,14 +9,14 @@ import type { Object3D } from "three";
 import { useGizmoStore } from "../stores/gizmo-store";
 
 type TransformControlsProps = {
-  objectRef: RefObject<Object3D | null>;
+  object?: RefObject<Object3D | null> | Object3D | null;
   size?: number;
   defaultMode?: TransformControlsMode;
   disabledModes?: TransformControlsMode[];
 };
 
 export default function TransformControls({
-  objectRef,
+  object,
   size = 0.6,
   defaultMode = "translate",
   disabledModes = [],
@@ -43,8 +43,9 @@ export default function TransformControls({
 
   // Instantiation / Unmount cleanup
   useEffect(() => {
-    const object = objectRef.current;
     if (!object) return;
+    const targetObject = "isObject3D" in object ? object : object.current;
+    if (!targetObject) return;
 
     const transformControls = new TransformControlsImpl(
       camera,
@@ -52,7 +53,7 @@ export default function TransformControls({
     );
 
     transformControls.setSize(size);
-    transformControls.attach(object);
+    transformControls.attach(targetObject);
     controlsRef.current = transformControls;
 
     const helper = transformControls.getHelper();
@@ -75,7 +76,7 @@ export default function TransformControls({
       transformControls.dispose();
       controlsRef.current = null;
     };
-  }, [camera, renderer.domElement, scene, controls, size, objectRef]);
+  }, [camera, renderer.domElement, scene, controls, size, object]);
 
   return null;
 }

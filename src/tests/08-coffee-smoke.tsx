@@ -53,6 +53,7 @@ function Smoke(props: ThreeElements["mesh"]) {
       return p;
     })();
 
+    // TODO: Use a noise texture instead of procedural noise
     const smoke = mx_noise_float(
       uv()
         .mul(vec2(3, 2))

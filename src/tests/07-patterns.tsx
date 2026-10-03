@@ -23,6 +23,8 @@ import {
 } from "three/tsl";
 import { DoubleSide, Node, RepeatWrapping, SRGBColorSpace } from "three/webgpu";
 
+// TODO: Refactor this file
+
 const DISTANCE = 2.5;
 
 export default function PatternsTest(props: ThreeElements["group"]) {

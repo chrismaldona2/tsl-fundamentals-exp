@@ -32,240 +32,244 @@ export default function Effects() {
     Sobel,
     Drunkenness,
     Shatter,
-  } = useDebugControls("✨ Post-Processing", {
-    FXAA: folder(
-      "FXAA",
-      {
-        active: {
-          name: "Active",
-          value: true,
-          uniform: false,
-          onChange: () => rebuild(),
+  } = useDebugControls(
+    "✨ Post-Processing",
+    {
+      FXAA: folder(
+        "FXAA",
+        {
+          active: {
+            name: "Active",
+            value: true,
+            uniform: false,
+            onChange: () => rebuild(),
+          },
         },
-      },
-      { collapsed: true },
-    ),
-    Bloom: folder(
-      "Bloom",
-      {
-        active: {
-          name: "Active",
-          value: true,
-          uniform: false,
-          onChange: () => rebuild(),
+        { collapsed: true },
+      ),
+      Bloom: folder(
+        "Bloom",
+        {
+          active: {
+            name: "Active",
+            value: true,
+            uniform: false,
+            onChange: () => rebuild(),
+          },
+          strength: {
+            name: "Strength",
+            value: 0.05,
+            min: 0.001,
+            max: 3,
+            step: 0.001,
+          },
+          radius: {
+            name: "Radius",
+            value: 0,
+            min: 0,
+            max: 1,
+            step: 0.001,
+          },
+          threshold: {
+            name: "Threshold",
+            value: 0,
+            min: 0,
+            max: 4,
+            step: 0.001,
+          },
         },
-        strength: {
-          name: "Strength",
-          value: 1,
-          min: 0.01,
-          max: 10,
-          step: 0.01,
+        { collapsed: true },
+      ),
+      ChromaticAberration: folder(
+        "Chromatic Aberration",
+        {
+          active: {
+            name: "Active",
+            value: false,
+            uniform: false,
+            onChange: () => rebuild(),
+          },
+          strength: {
+            name: "Strength",
+            value: 2,
+            min: 0.01,
+            max: 10,
+            step: 0.01,
+          },
+          center: {
+            name: "Center Coordinates",
+            value: { x: 0.5, y: 0.5 },
+            labels: { x: "X", y: "Y" },
+            min: 0,
+            max: 1,
+            collapsed: true,
+          },
+          scale: {
+            name: "Scale",
+            value: 1,
+            min: 0.01,
+            max: 4,
+            step: 0.01,
+          },
         },
-        radius: {
-          name: "Radius",
-          value: 0,
-          min: 0,
-          max: 1,
-          step: 0.001,
+        { collapsed: true },
+      ),
+      Pixelation: folder(
+        "Pixelation",
+        {
+          active: {
+            name: "Active",
+            value: false,
+            uniform: false,
+            onChange: () => rebuild(),
+          },
+          pixelSize: {
+            name: "Pixel Size",
+            value: 12,
+            min: 0.01,
+            max: 25,
+            step: 0.01,
+          },
+          normalEdgeStrength: {
+            name: "Normal Edge Strength",
+            value: 2,
+            min: 0.01,
+            max: 10,
+            step: 0.01,
+          },
+          depthEdgeStrength: {
+            name: "Depth Edge Strength",
+            value: 1,
+            min: 0.01,
+            max: 10,
+            step: 0.01,
+          },
         },
-        threshold: {
-          name: "Threshold",
-          value: 0.25,
-          min: 0,
-          max: 4,
-          step: 0.001,
+        { collapsed: true },
+      ),
+      Sobel: folder(
+        "Sobel",
+        {
+          active: {
+            name: "Active",
+            value: false,
+            uniform: false,
+            onChange: () => rebuild(),
+          },
+          edgeMin: {
+            name: "Edge Min",
+            value: 0.2,
+            min: 0,
+            max: 1,
+            step: 0.01,
+          },
+          edgeMax: {
+            name: "Edge Max",
+            value: 1,
+            min: 0,
+            max: 1,
+            step: 0.01,
+          },
         },
-      },
-      { collapsed: true },
-    ),
-    ChromaticAberration: folder(
-      "Chromatic Aberration",
-      {
-        active: {
-          name: "Active",
-          value: false,
-          uniform: false,
-          onChange: () => rebuild(),
+        { collapsed: true },
+      ),
+      Drunkenness: folder(
+        "Drunkenness",
+        {
+          active: {
+            name: "Active",
+            value: false,
+            uniform: false,
+            onChange: () => rebuild(),
+          },
+          tintColor: {
+            name: "Color",
+            value: "#5cf0a3",
+          },
+          waveSpeed: {
+            name: "Wave Speed",
+            value: 0.2,
+            min: 0,
+            max: 2,
+            step: 0.001,
+          },
+          waveFrequency: {
+            name: "Wave Frequency",
+            value: 7,
+            min: 0,
+            max: 15,
+            step: 0.01,
+          },
+          waveAmplitude: {
+            name: "Wave Amplitude",
+            value: 0.1,
+            min: 0,
+            max: 1,
+            step: 0.001,
+          },
         },
-        strength: {
-          name: "Strength",
-          value: 2,
-          min: 0.01,
-          max: 10,
-          step: 0.01,
+        { collapsed: true },
+      ),
+      Shatter: folder(
+        "Shatter",
+        {
+          active: {
+            name: "Active",
+            value: false,
+            uniform: false,
+            onChange: () => rebuild(),
+          },
+          crackColor: {
+            name: "Color",
+            value: "#db784c",
+          },
+          crackColorStrength: {
+            name: "Color Strength",
+            value: 3,
+            min: 0,
+            max: 15,
+            step: 0.01,
+          },
+          progress: {
+            name: "Progress",
+            value: 1,
+            min: 0,
+            max: 1,
+            step: 0.01,
+          },
+          subdivision: {
+            name: "Subdivisions",
+            value: 3,
+            min: 1,
+            max: 12,
+          },
+          seed: {
+            name: "Seed",
+            value: 18,
+            min: 0,
+            max: 100,
+            step: 1,
+          },
+          thickness: {
+            name: "Thickness",
+            value: 0.02,
+            min: 0,
+            max: 0.05,
+            step: 0.0001,
+          },
+          offsetStrength: {
+            name: "Offset Strength",
+            value: 0.02,
+            min: 0,
+            max: 0.1,
+            step: 0.0001,
+          },
         },
-        center: {
-          name: "Center Coordinates",
-          value: { x: 0.5, y: 0.5 },
-          labels: { x: "X", y: "Y" },
-          min: 0,
-          max: 1,
-          collapsed: true,
-        },
-        scale: {
-          name: "Scale",
-          value: 1,
-          min: 0.01,
-          max: 4,
-          step: 0.01,
-        },
-      },
-      { collapsed: true },
-    ),
-    Pixelation: folder(
-      "Pixelation",
-      {
-        active: {
-          name: "Active",
-          value: false,
-          uniform: false,
-          onChange: () => rebuild(),
-        },
-        pixelSize: {
-          name: "Pixel Size",
-          value: 12,
-          min: 0.01,
-          max: 25,
-          step: 0.01,
-        },
-        normalEdgeStrength: {
-          name: "Normal Edge Strength",
-          value: 2,
-          min: 0.01,
-          max: 10,
-          step: 0.01,
-        },
-        depthEdgeStrength: {
-          name: "Depth Edge Strength",
-          value: 1,
-          min: 0.01,
-          max: 10,
-          step: 0.01,
-        },
-      },
-      { collapsed: true },
-    ),
-    Sobel: folder(
-      "Sobel",
-      {
-        active: {
-          name: "Active",
-          value: false,
-          uniform: false,
-          onChange: () => rebuild(),
-        },
-        edgeMin: {
-          name: "Edge Min",
-          value: 0.2,
-          min: 0,
-          max: 1,
-          step: 0.01,
-        },
-        edgeMax: {
-          name: "Edge Max",
-          value: 1,
-          min: 0,
-          max: 1,
-          step: 0.01,
-        },
-      },
-      { collapsed: true },
-    ),
-    Drunkenness: folder(
-      "Drunkenness",
-      {
-        active: {
-          name: "Active",
-          value: false,
-          uniform: false,
-          onChange: () => rebuild(),
-        },
-        tintColor: {
-          name: "Color",
-          value: "#5cf0a3",
-        },
-        waveSpeed: {
-          name: "Wave Speed",
-          value: 0.2,
-          min: 0,
-          max: 2,
-          step: 0.001,
-        },
-        waveFrequency: {
-          name: "Wave Frequency",
-          value: 7,
-          min: 0,
-          max: 15,
-          step: 0.01,
-        },
-        waveAmplitude: {
-          name: "Wave Amplitude",
-          value: 0.1,
-          min: 0,
-          max: 1,
-          step: 0.001,
-        },
-      },
-      { collapsed: true },
-    ),
-    Shatter: folder(
-      "Shatter",
-      {
-        active: {
-          name: "Active",
-          value: false,
-          uniform: false,
-          onChange: () => rebuild(),
-        },
-        crackColor: {
-          name: "Color",
-          value: "#db784c",
-        },
-        crackColorStrength: {
-          name: "Color Strength",
-          value: 3,
-          min: 0,
-          max: 15,
-          step: 0.01,
-        },
-        progress: {
-          name: "Progress",
-          value: 1,
-          min: 0,
-          max: 1,
-          step: 0.01,
-        },
-        subdivision: {
-          name: "Subdivisions",
-          value: 3,
-          min: 1,
-          max: 12,
-        },
-        seed: {
-          name: "Seed",
-          value: 18,
-          min: 0,
-          max: 100,
-          step: 1,
-        },
-        thickness: {
-          name: "Thickness",
-          value: 0.02,
-          min: 0,
-          max: 0.05,
-          step: 0.0001,
-        },
-        offsetStrength: {
-          name: "Offset Strength",
-          value: 0.02,
-          min: 0,
-          max: 0.1,
-          step: 0.0001,
-        },
-      },
-      { collapsed: true },
-    ),
-  });
+        { collapsed: true },
+      ),
+    },
+    { collapsed: true },
+  );
 
   // Main pipeline
   const { rebuild } = useRenderPipeline(

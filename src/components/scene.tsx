@@ -1,7 +1,7 @@
+import { Suspense } from "react";
 import Lights from "./lights";
 import GizmoManager from "./gizmo-manager";
-import { Suspense } from "react";
-import PostProcessingLesson from "../tests/11-postprocessing";
+import ShieldLesson from "../tests/12-shield";
 
 export default function Scene() {
   return (
@@ -9,7 +9,7 @@ export default function Scene() {
       <Lights />
       <GizmoManager />
       <Suspense fallback={null}>
-        <PostProcessingLesson />
+        <ShieldLesson />
       </Suspense>
     </>
   );

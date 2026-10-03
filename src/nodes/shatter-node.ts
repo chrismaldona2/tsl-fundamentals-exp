@@ -59,7 +59,7 @@ class ShatterNode extends TempNode<"vec4"> {
     const voronoiColor = voronoi(voronoiUv, this.subdivision, this.seed);
 
     // Cracks
-    const cracksNoise = mx_noise_float(voronoiUv.mul(5)).remap(-1, 1, 0, 0.5);
+    const cracksNoise = mx_noise_float(voronoiUv.mul(5)).remap(-1, 1, 0, 0.5); // TODO: Use a noise texture instead of procedural noise
     const cracksColor = this.crackColor.mul(this.crackColorStrength);
     const cracks = voronoiColor.g.step(
       this.progress.sub(cracksNoise).mul(this.thickness),
