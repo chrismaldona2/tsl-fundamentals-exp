@@ -2,7 +2,6 @@ import {
   useFrame,
   useNodes,
   useTexture,
-  useUniform,
   type ThreeElements,
 } from "@react-three/fiber/webgpu";
 import { useCallback, useLayoutEffect, useMemo, useState } from "react";
@@ -38,6 +37,7 @@ import {
   texture,
   time,
   TWO_PI,
+  uniform,
   uniformArray,
   uv,
   vec2,
@@ -58,7 +58,10 @@ export default function ShieldLesson(props: ThreeElements["group"]) {
   );
 }
 
-type ShieldNodeScope = { junctionNode: Node<"vec3"> };
+type ShieldNodeScope = {
+  junctionNode: Node<"vec3">;
+  shieldCenter: UniformNode<Vector3>;
+};
 
 const shieldRaycastEnv = {
   inverse: new Matrix4(),
@@ -88,42 +91,47 @@ function Shield(props: ThreeElements["mesh"]) {
     linesDensity,
     linesSpeed,
     junctionFade,
-  } = useDebugControls("🛡️ Shield", {
-    radius: { name: "Radius", value: 2, min: 0.01, max: 6, step: 0.01 },
-    primaryColor: { name: "Primary Color", value: "#1d52d5" },
-    secondaryColor: { name: "Secondary Color", value: "#da263d" },
-    strength: { name: "Strength", value: 7, min: 0, max: 20, step: 0.01 },
-    edgeThickness: {
-      name: "Edge Thickness",
-      value: 5,
-      min: 1,
-      max: 10,
-      step: 0.1,
+  } = useDebugControls(
+    "🛡️ Shield",
+    {
+      radius: { name: "Radius", value: 2, min: 0.01, max: 6, step: 0.01 },
+      primaryColor: { name: "Primary Color", value: "#1d52d5" },
+      secondaryColor: { name: "Secondary Color", value: "#da263d" },
+      strength: { name: "Strength", value: 7, min: 0, max: 20, step: 0.01 },
+      edgeThickness: {
+        name: "Edge Thickness",
+        value: 5,
+        min: 1,
+        max: 10,
+        step: 0.1,
+      },
+      hexTilingX: { name: "Hex Tiling X", value: 6, min: 1, max: 20, step: 1 },
+      hexTilingY: { name: "Hex Tiling Y", value: 4, min: 1, max: 20, step: 1 },
+      linesDensity: {
+        name: "Lines Density",
+        value: 20,
+        min: 1,
+        max: 50,
+        step: 1,
+      },
+      linesSpeed: {
+        name: "Lines Speed",
+        value: 0.05,
+        min: 0,
+        max: 0.2,
+        step: 0.001,
+      },
+      junctionFade: {
+        name: "Junction Fade",
+        value: 0.2,
+        min: 0.01,
+        max: 1,
+        step: 0.01,
+      },
     },
-    hexTilingX: { name: "Hex Tiling X", value: 6, min: 1, max: 20, step: 1 },
-    hexTilingY: { name: "Hex Tiling Y", value: 4, min: 1, max: 20, step: 1 },
-    linesDensity: {
-      name: "Lines Density",
-      value: 20,
-      min: 1,
-      max: 50,
-      step: 1,
-    },
-    linesSpeed: {
-      name: "Lines Speed",
-      value: 0.05,
-      min: 0,
-      max: 0.2,
-      step: 0.001,
-    },
-    junctionFade: {
-      name: "Junction Fade",
-      value: 0.2,
-      min: 0.01,
-      max: 1,
-      step: 0.01,
-    },
-  });
+    "shield",
+    { collapsed: true },
+  );
 
   // Custom raycaster (sphere shape based)
   const customRaycast = useCallback<Mesh["raycast"]>(
@@ -267,11 +275,10 @@ function Shield(props: ThreeElements["mesh"]) {
   ]);
 
   // Shared nodes
-  const center = useUniform("shieldCenter", new Vector3());
-  useFrame(() => mesh.getWorldPosition(center.value));
-  useNodes<ShieldNodeScope>(() => {
+  const { shieldCenter } = useNodes<ShieldNodeScope>(() => {
+    const shieldCenter = uniform(new Vector3());
     const junctionNode = Fn(() => {
-      const sdf = positionWorld.distance(center).sub(radius);
+      const sdf = positionWorld.distance(shieldCenter).sub(radius);
       const junctionMask = sdf
         .remapClamp(0, junctionFade.negate(), 1, 0)
         .mul(sdf.negate().step(0))
@@ -280,9 +287,9 @@ function Shield(props: ThreeElements["mesh"]) {
 
       return mix(primaryColor, secondaryColor, junctionMask).mul(junctionMask);
     })();
-
-    return { junctionNode };
+    return { junctionNode, shieldCenter };
   }, "shield");
+  useFrame(() => mesh.getWorldPosition(shieldCenter.value));
 
   return (
     <>

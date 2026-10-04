@@ -268,6 +268,7 @@ export default function Effects() {
         { collapsed: true },
       ),
     },
+    "postprocessing",
     { collapsed: true },
   );
 

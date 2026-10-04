@@ -8,9 +8,7 @@ export type PlainVector =
   | { x: number; y: number; z: number; w: number };
 
 export type AnyVectorInput = Vector2 | Vector3 | Vector4 | PlainVector;
-
 export type AnyVectorOutput = Vector2 | Vector3 | Vector4;
-
 export type OptionValue = string | number | boolean;
 
 export type FolderOptions = {
@@ -28,14 +26,6 @@ export type FolderWrapper<T> = {
 export type BaseControl<TInput, TOutput = TInput> = {
   readonly value: TInput;
   readonly name?: string;
-
-  /**
-   * When `true`, the returned value is a Three.js TSL UniformNode ready to use in shaders.
-   *
-   * When `false`, it returns a plain `{ value }` state container.
-   *
-   * Defaults to true.
-   */
   readonly uniform?: boolean;
   onChange?(value: TOutput): void;
 };
@@ -52,9 +42,7 @@ export type OptionsControl<T extends OptionValue = OptionValue> =
   };
 
 export type ColorControl = BaseControl<`#${string}` | Color>;
-
 export type BooleanControl = BaseControl<boolean>;
-
 export type StringControl = BaseControl<string>;
 
 export type VectorBounds =
@@ -65,7 +53,6 @@ export type VectorBounds =
       readonly z?: number;
       readonly w?: number;
     };
-
 export type VectorLabels = {
   readonly x?: string;
   readonly y?: string;
@@ -106,7 +93,7 @@ export type DebugSchema = {
 };
 
 // Inference logic
-type ExtractNodeType<T> = T extends `#${string}` | Color
+type ResolveUniform<T> = T extends Color | `#${string}`
   ? UniformNode<"color", Color>
   : T extends Vector4 | { x: number; y: number; z: number; w: number }
     ? UniformNode<"vec4", Vector4>
@@ -120,34 +107,20 @@ type ExtractNodeType<T> = T extends `#${string}` | Color
             ? UniformNode<"float", number>
             : { value: T };
 
-export type MapValueToNode<T> = T extends ButtonControl
-  ? never
-  : T extends { readonly options: unknown }
-    ? { value: T extends { readonly value: infer V } ? V : never }
-    : T extends { readonly uniform: false; readonly value: infer V }
-      ? V extends PlainVector
-        ? { value: AnyVectorOutput }
-        : { value: V }
-      : T extends BaseControl<infer V, infer _>
-        ? ExtractNodeType<V>
-        : ExtractNodeType<T>;
-
 export type DebugControlsResult<T> = {
   -readonly [K in keyof T as T[K] extends ButtonControl
     ? never
     : K]: T[K] extends FolderWrapper<infer S>
     ? DebugControlsResult<S>
-    : T[K] extends
-          | ControlConfig
-          | Color
-          | AnyVectorInput
-          | string
-          | number
-          | boolean
-      ? MapValueToNode<T[K]>
-      : T[K] extends DebugSchema
-        ? DebugControlsResult<T[K]>
-        : MapValueToNode<T[K]>;
+    : T[K] extends { readonly uniform: false; readonly value: infer V }
+      ? { value: V extends PlainVector ? AnyVectorOutput : V }
+      : T[K] extends { readonly options: unknown; readonly value: infer V }
+        ? { value: V }
+        : T[K] extends BaseControl<infer V, any>
+          ? ResolveUniform<V>
+          : T[K] extends DebugSchema
+            ? DebugControlsResult<T[K]>
+            : ResolveUniform<T[K]>;
 };
 
 // Internal AST
@@ -161,24 +134,9 @@ export type NormalizedControl =
       name: string;
       uniform: boolean;
     }
-  | {
-      kind: "boolean";
-      value: boolean;
-      name: string;
-      uniform: boolean;
-    }
-  | {
-      kind: "string";
-      value: string;
-      name: string;
-      uniform: boolean;
-    }
-  | {
-      kind: "color";
-      value: Color;
-      name: string;
-      uniform: boolean;
-    }
+  | { kind: "boolean"; value: boolean; name: string; uniform: boolean }
+  | { kind: "string"; value: string; name: string; uniform: boolean }
+  | { kind: "color"; value: Color; name: string; uniform: boolean }
   | {
       kind: "vector";
       value: AnyVectorOutput;
@@ -207,3 +165,8 @@ export type NormalizedFolder = {
 };
 
 export type NormalizedNode = NormalizedControl | NormalizedFolder;
+
+export type UniformLeaf = Extract<
+  NormalizedNode,
+  { kind: "number" | "boolean" | "color" | "vector" }
+>;

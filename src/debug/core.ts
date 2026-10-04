@@ -11,8 +11,8 @@ import type {
   AnyVectorOutput,
   OptionValue,
   VectorControl,
+  UniformLeaf,
 } from "./types";
-import { uniform } from "three/tsl";
 
 /**
  * Converts a debug schema into a normalized internal format used to build the Three.js Inspector controls.
@@ -135,54 +135,76 @@ function normalizeNode(key: string, value: unknown): NormalizedNode {
 }
 
 /**
- * Generates the mutable state containers and TSL uniforms corresponding to a normalized schema.
+ * Extracts a flattened dictionary of raw shader values required by R3F's uniform ledger.
  */
-export function createNodes(
+export function collectUniformCandidates(
   tree: Record<string, NormalizedNode>,
-): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
+  prefix = "",
+): UniformInputRecord {
+  const out: UniformInputRecord = {};
 
   for (const [key, node] of Object.entries(tree)) {
-    // Recursively handle folders
+    const path = prefix ? `${prefix}/${key}` : key;
+
     if (node.kind === "folder") {
-      result[key] = createNodes(node.children);
-      continue;
-    }
-
-    // Ignore buttons (they have no state value)
-    if (node.kind === "button") {
-      continue;
-    }
-
-    // Handle state primitive opt-outs
-    if (!node.uniform || node.kind === "options" || node.kind === "string") {
-      result[key] = { value: node.value };
-      continue;
-    }
-
-    // TSL Uniform Generation
-    switch (node.kind) {
-      case "color":
-        result[key] = uniform(node.value, "color");
-        break;
-      case "vector":
-        if (node.value instanceof Vector2)
-          result[key] = uniform(node.value, "vec2");
-        else if (node.value instanceof Vector3)
-          result[key] = uniform(node.value, "vec3");
-        else if (node.value instanceof Vector4)
-          result[key] = uniform(node.value, "vec4");
-        break;
-      case "boolean":
-        result[key] = uniform(node.value, "bool");
-        break;
-      case "number":
-        result[key] = uniform(node.value, "float");
-        break;
+      Object.assign(out, collectUniformCandidates(node.children, path));
+    } else if (isUniformLeaf(node)) {
+      out[path] = node.value;
     }
   }
 
-  return result;
+  return out;
+}
+
+/**
+ * Generates nested mutable state containers for non-shader controls.
+ */
+export function createPlainContainers(
+  tree: Record<string, NormalizedNode>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+
+  for (const [key, node] of Object.entries(tree)) {
+    if (node.kind === "folder") {
+      out[key] = createPlainContainers(node.children);
+    } else if (node.kind !== "button" && !isUniformLeaf(node)) {
+      out[key] = { value: node.value };
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Rebuilds the schema's hierarchy by merging the flat UniformNodes created by useUniforms
+ * with the nested non-uniform controls.
+ */
+export function assembleNodes(
+  tree: Record<string, NormalizedNode>,
+  plain: Record<string, unknown>,
+  ledger: Record<string, unknown>,
+  prefix = "",
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+
+  for (const [key, node] of Object.entries(tree)) {
+    const path = prefix ? `${prefix}/${key}` : key;
+
+    if (node.kind === "folder") {
+      out[key] = assembleNodes(
+        node.children,
+        plain[key] as Record<string, unknown>,
+        ledger,
+        path,
+      );
+    } else if (node.kind === "button") {
+      continue; // Buttons carry no state
+    } else {
+      out[key] = isUniformLeaf(node) ? ledger[path] : plain[key];
+    }
+  }
+
+  return out;
 }
 
 // Internal type guards
@@ -258,5 +280,15 @@ function isNestedSchema(val: unknown): val is DebugSchema {
     !isControlConfig(val) &&
     !isFolderWrapper(val) &&
     !isPlainVector(val)
+  );
+}
+
+export function isUniformLeaf(node: NormalizedNode): node is UniformLeaf {
+  return (
+    node.kind !== "folder" &&
+    node.kind !== "button" &&
+    node.kind !== "options" &&
+    node.kind !== "string" &&
+    node.uniform === true
   );
 }
