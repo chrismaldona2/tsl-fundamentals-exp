@@ -1,5 +1,4 @@
 import {
-  useBuffers,
   useFrame,
   useTexture,
   type ThreeElements,
@@ -45,7 +44,7 @@ export default function InstancesLesson(props: ThreeElements["group"]) {
 }
 
 // Without Instancing
-function Method_1(props: ThreeElements["group"]) {
+export function Method_1(props: ThreeElements["group"]) {
   const count = 5;
 
   // Material
@@ -95,7 +94,7 @@ function Method_1(props: ThreeElements["group"]) {
 }
 
 // Instanced Mesh
-function Method_2(props: ThreeElements["group"]) {
+export function Method_2(props: ThreeElements["group"]) {
   const meshRef = useRef<InstancedMesh>(null);
   const count = 5;
 
@@ -150,7 +149,7 @@ function Method_2(props: ThreeElements["group"]) {
 }
 
 // Instance Index
-function Method_3(props: ThreeElements["group"]) {
+export function Method_3(props: ThreeElements["group"]) {
   const meshRef = useRef<Mesh>(null);
   const count = 5;
 
@@ -205,7 +204,7 @@ function Method_3(props: ThreeElements["group"]) {
 }
 
 // Instance Buffer Attribute
-function Method_4(props: ThreeElements["group"]) {
+export function Method_4(props: ThreeElements["group"]) {
   const count = 5;
 
   // Shader
@@ -270,7 +269,7 @@ function Method_4(props: ThreeElements["group"]) {
 }
 
 // Instanced Interleaved Buffer
-function Method_5(props: ThreeElements["group"]) {
+export function Method_5(props: ThreeElements["group"]) {
   const count = 5;
 
   // Shader
@@ -335,7 +334,7 @@ function Method_5(props: ThreeElements["group"]) {
 }
 
 // Instanced Buffer Attribute and Full Matrices
-function Method_6(props: ThreeElements["group"]) {
+export function Method_6(props: ThreeElements["group"]) {
   const count = 5;
 
   // Shader
@@ -386,7 +385,7 @@ function Method_6(props: ThreeElements["group"]) {
 }
 
 // Uniform Array
-function Method_7(props: ThreeElements["group"]) {
+export function Method_7(props: ThreeElements["group"]) {
   const count = 5;
 
   // Shader
@@ -444,19 +443,14 @@ function Method_7(props: ThreeElements["group"]) {
 }
 
 // Storage and compute
-function Method_8(props: ThreeElements["group"]) {
+export function Method_8(props: ThreeElements["group"]) {
   const count = 5;
-
-  // Buffers
-  const { positionStorage } = useBuffers(
-    () => ({
-      positionStorage: instancedArray(count, "vec3"),
-    }),
-    "method_8_compute",
-  );
 
   // Shader
   const { nodes, updateCompute } = useMemo(() => {
+    // Buffer
+    const positionStorage = instancedArray(count, "vec3");
+
     // Compute
     const update = Fn(() => {
       const progress = instanceIndex.toFloat().div(count - 1);
@@ -479,7 +473,7 @@ function Method_8(props: ThreeElements["group"]) {
       nodes: { positionNode },
       updateCompute,
     };
-  }, [count, positionStorage]);
+  }, [count]);
 
   useFrame(({ renderer }) => renderer.compute(updateCompute));
 

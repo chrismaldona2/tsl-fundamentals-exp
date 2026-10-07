@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Lights from "./lights";
 import GizmoManager from "./gizmo-manager";
-import InstancesLesson from "../tests/13-instances";
+import MagicExplotionsLesson from "../tests/14-magic-explotions";
 
 export default function Scene() {
   return (
@@ -9,7 +9,7 @@ export default function Scene() {
       <Lights />
       <GizmoManager />
       <Suspense fallback={null}>
-        <InstancesLesson />
+        <MagicExplotionsLesson />
       </Suspense>
     </>
   );
