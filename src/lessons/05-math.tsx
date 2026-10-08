@@ -1,16 +1,16 @@
-import type { ThreeElements } from "@react-three/fiber/webgpu";
+import { type ThreeElements } from "@react-three/fiber/webgpu";
 import { useMemo } from "react";
 import {
   uv,
-  mx_noise_vec3,
-  checker,
   positionLocal,
-  time,
-  vec2,
+  mx_noise_float,
+  rand,
   vec3,
+  time,
+  rotate,
 } from "three/tsl";
 
-export default function NodeMaterialsTest(props: ThreeElements["group"]) {
+export default function MathLesson(props: ThreeElements["group"]) {
   return (
     <group {...props}>
       <Floor />
@@ -21,8 +21,9 @@ export default function NodeMaterialsTest(props: ThreeElements["group"]) {
 
 function Floor(props: ThreeElements["mesh"]) {
   const nodes = useMemo(() => {
+    const pattern = rand(uv().mul(100).floor());
+    const colorNode = vec3(pattern);
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
-    const colorNode = mx_noise_vec3(uv().mul(4)).toVarying();
 
     return {
       colorNode,
@@ -32,7 +33,7 @@ function Floor(props: ThreeElements["mesh"]) {
 
   return (
     <mesh rotation-x={-Math.PI / 2} receiveShadow {...props}>
-      <planeGeometry args={[10, 10, 25, 25]} />
+      <planeGeometry args={[10, 10, 1, 1]} />
       <meshStandardNodeMaterial transparent {...nodes} />
     </mesh>
   );
@@ -40,12 +41,12 @@ function Floor(props: ThreeElements["mesh"]) {
 
 function TorusKnot(props: ThreeElements["mesh"]) {
   const nodes = useMemo(() => {
-    const pattern = checker(uv().add(time.mul(0.1)).mul(vec2(30, 5)));
-    const colorNode = vec3(pattern, 0, 0);
+    const noise = mx_noise_float(positionLocal.mul(4));
+    const colorNode = vec3(noise);
 
-    const positionNode = positionLocal.add(
-      vec3(0, 0, time.add(positionLocal.y.mul(2)).sin().mul(0.3)),
-    );
+    const angle = time.add(positionLocal.y).sin();
+    const newXZ = rotate(positionLocal.xz, angle);
+    const positionNode = vec3(newXZ.x, positionLocal.y, positionLocal.z);
 
     return {
       colorNode,

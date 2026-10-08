@@ -17,7 +17,7 @@ import {
 } from "three/tsl";
 import { DoubleSide, PlaneGeometry } from "three/webgpu";
 
-export default function CoffeeTest(props: ThreeElements["group"]) {
+export default function CoffeeLesson(props: ThreeElements["group"]) {
   const glb = useGLTF("/models/coffee.glb");
 
   return (

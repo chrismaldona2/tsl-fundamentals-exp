@@ -5,7 +5,7 @@ import { BufferAttribute, PlaneGeometry } from "three/webgpu";
 import { uv, positionWorld, time, mix, bufferAttribute } from "three/tsl";
 import { folder, useDebugControls } from "../debug/use-debug-controls";
 
-export default function UniformsAndAttributesTest(
+export default function UniformsAndAttributesLesson(
   props: ThreeElements["group"],
 ) {
   return (

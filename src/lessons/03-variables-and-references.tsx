@@ -4,7 +4,7 @@ import { Mesh, SRGBColorSpace } from "three/webgpu";
 import { uv, positionLocal, vec4 } from "three/tsl";
 import TransformControls from "../components/transform-controls";
 
-export default function VariablesAndReferencesTest(
+export default function VariablesAndReferencesLesson(
   props: ThreeElements["group"],
 ) {
   return (
@@ -47,7 +47,7 @@ function TorusKnot(props: ThreeElements["mesh"]) {
 
   return (
     <>
-      <TransformControls objectRef={meshRef} />
+      <TransformControls object={meshRef} />
       <mesh ref={meshRef} castShadow receiveShadow {...props}>
         <torusKnotGeometry args={[0.5, 0.24, 128, 32]} />
         <meshStandardNodeMaterial {...nodes} />

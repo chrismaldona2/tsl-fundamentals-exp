@@ -19,7 +19,7 @@ import {
 } from "three/tsl";
 import TransformControls from "../components/transform-controls";
 
-export default function TexturesTest(props: ThreeElements["group"]) {
+export default function TexturesLesson(props: ThreeElements["group"]) {
   return (
     <group {...props}>
       <Floor />
@@ -87,7 +87,7 @@ function TorusKnot(props: ThreeElements["mesh"]) {
 
   return (
     <>
-      <TransformControls objectRef={meshRef} />
+      <TransformControls object={meshRef} />
       <mesh ref={meshRef} castShadow receiveShadow {...props}>
         <torusKnotGeometry args={[0.5, 0.24, 128, 32]} />
         <meshStandardNodeMaterial {...nodes} />

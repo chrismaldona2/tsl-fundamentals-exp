@@ -4,7 +4,7 @@ import { uv, float, vec3, vec2, bool, Fn, If, uint, Loop } from "three/tsl";
 import type { Node } from "three/webgpu";
 import { useDebugControls } from "../debug/use-debug-controls";
 
-export default function NodeFunctionsTest(props: ThreeElements["group"]) {
+export default function NodeFunctionsLesson(props: ThreeElements["group"]) {
   return (
     <group {...props}>
       <Floor />

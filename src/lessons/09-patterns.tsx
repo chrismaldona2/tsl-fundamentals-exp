@@ -27,7 +27,7 @@ import { DoubleSide, Node, RepeatWrapping, SRGBColorSpace } from "three/webgpu";
 
 const DISTANCE = 2.5;
 
-export default function PatternsTest(props: ThreeElements["group"]) {
+export default function PatternsLesson(props: ThreeElements["group"]) {
   return (
     <group {...props}>
       <Floor />
