@@ -136,7 +136,7 @@ function Floor(props: ThreeElements["mesh"]) {
         uniform: true,
       },
     },
-    "node_functions_floor",
+    "node-functions-lesson",
     { collapsed: true },
   );
 

@@ -5,7 +5,7 @@ import {
   TransformControls as TransformControlsImpl,
   type TransformControlsMode,
 } from "three/examples/jsm/Addons.js";
-import type { Object3D } from "three";
+import type { Object3D } from "three/webgpu";
 import { useGizmoStore } from "../stores/gizmo-store";
 
 type TransformControlsProps = {

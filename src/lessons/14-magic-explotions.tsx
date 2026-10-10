@@ -97,7 +97,7 @@ function ExplosionsSystem({
         step: 0.01,
       },
     },
-    "magic_explotion",
+    "magic-explotions-lesson",
   );
 
   // Shader nodes

@@ -79,7 +79,7 @@ function TorusKnot(props: ThreeElements["mesh"]) {
         bottomColor: { value: "#258d5d", name: "Bottom Color", uniform: true },
       }),
     },
-    "uniform_and_attributes_torus_knot",
+    "uniform-and-attributes-lesson",
     { collapsed: true },
   );
 

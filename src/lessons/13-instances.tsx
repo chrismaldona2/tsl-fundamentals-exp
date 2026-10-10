@@ -167,7 +167,7 @@ export function Method_3(props: ThreeElements["group"]) {
         },
       },
     },
-    "instance_index_method",
+    "instances-lesson",
   );
 
   // Shader

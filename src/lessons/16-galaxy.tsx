@@ -4,8 +4,6 @@ import {
   float,
   Fn,
   instanceIndex,
-  mix,
-  positionLocal,
   range,
   select,
   time,

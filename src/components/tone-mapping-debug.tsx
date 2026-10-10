@@ -41,7 +41,7 @@ export default function ToneMappingDebug() {
         onChange: (v: number) => (renderer.toneMappingExposure = v),
       },
     },
-    "renderer_tonemapping",
+    "renderer-tonemapping",
     { collapsed: true },
   );
 

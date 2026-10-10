@@ -129,7 +129,7 @@ function Shield(props: ThreeElements["mesh"]) {
         step: 0.01,
       },
     },
-    "shield",
+    "shield-lesson",
     { collapsed: true },
   );
 
