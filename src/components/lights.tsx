@@ -1,8 +1,15 @@
+import { useRef } from "react";
+import type { AmbientLight, DirectionalLight } from "three/webgpu";
+
 export default function Lights() {
+  const ambientLightRef = useRef<AmbientLight>(null);
+  const directionalLightRef = useRef<DirectionalLight>(null);
+
   return (
     <>
-      <ambientLight color="#859dff" intensity={1} />
+      <ambientLight ref={ambientLightRef} color="#859dff" intensity={1} />
       <directionalLight
+        ref={directionalLightRef}
         position={[8.48, 3.18, -4.24]}
         color="#ffffff"
         intensity={4.5}

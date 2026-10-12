@@ -2,7 +2,7 @@ import { OrbitControls } from "@react-three/drei/webgpu";
 import Canvas from "./components/canvas";
 import Scene from "./components/scene";
 import Effects from "./components/effects";
-import ToneMappingDebug from "./components/tone-mapping-debug";
+import ToneMappingDebug from "./components/renderer-debug";
 
 export default function App() {
   return (

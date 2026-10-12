@@ -1,4 +1,3 @@
-// oxlint-disable react/immutability
 import { useThree } from "@react-three/fiber/webgpu";
 import { useDebugControls } from "../debug/use-debug-controls";
 import {
@@ -9,18 +8,17 @@ import {
   NeutralToneMapping,
   NoToneMapping,
   ReinhardToneMapping,
-  type ToneMapping,
 } from "three/webgpu";
 
-export default function ToneMappingDebug() {
+export default function RendererDebug() {
   const renderer = useThree((s) => s.renderer);
 
   useDebugControls(
     "🎥 Renderer",
     {
-      toneMapping: {
-        name: "Tone Mapping",
-        value: renderer.toneMapping,
+      "Tone Mapping": {
+        target: renderer,
+        property: "toneMapping",
         options: {
           None: NoToneMapping,
           Linear: LinearToneMapping,
@@ -30,18 +28,15 @@ export default function ToneMappingDebug() {
           AgX: AgXToneMapping,
           Neutral: NeutralToneMapping,
         },
-        onChange: (v: ToneMapping) => (renderer.toneMapping = v),
       },
-      toneMappingExposure: {
-        name: "Tone Mapping Exposure",
-        value: renderer.toneMappingExposure,
+      "Tone Mapping Exposure": {
+        target: renderer,
+        property: "toneMappingExposure",
         min: 0,
         max: 3,
         step: 0.01,
-        onChange: (v: number) => (renderer.toneMappingExposure = v),
       },
     },
-    "renderer-tonemapping",
     { collapsed: true },
   );
 

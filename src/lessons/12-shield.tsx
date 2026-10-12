@@ -2,6 +2,7 @@ import {
   useFrame,
   useNodes,
   useTexture,
+  useUniforms,
   type ThreeElements,
 } from "@react-three/fiber/webgpu";
 import { useCallback, useLayoutEffect, useMemo, useState } from "react";
@@ -37,16 +38,15 @@ import {
   texture,
   time,
   TWO_PI,
-  uniform,
   uniformArray,
   uv,
   vec2,
   vec4,
 } from "three/tsl";
-import { useGLTF } from "@react-three/drei/webgpu";
 import { useDebugControls } from "../debug/use-debug-controls";
 import TransformControls from "../components/transform-controls";
 import gsap from "gsap";
+import { useAnvilGLB } from "../hooks/use-anvil-glb";
 
 export default function ShieldLesson(props: ThreeElements["group"]) {
   return (
@@ -58,11 +58,7 @@ export default function ShieldLesson(props: ThreeElements["group"]) {
   );
 }
 
-type ShieldNodeScope = {
-  junctionNode: Node<"vec3">;
-  shieldCenter: UniformNode<Vector3>;
-};
-
+type ShieldNodeScope = { junctionNode: Node<"vec3"> };
 const shieldRaycastEnv = {
   inverse: new Matrix4(),
   ray: new Ray(),
@@ -79,7 +75,7 @@ function Shield(props: ThreeElements["mesh"]) {
     tex.wrapT = RepeatWrapping;
   });
 
-  // Debug
+  // Uniforms
   const {
     radius,
     primaryColor,
@@ -91,46 +87,22 @@ function Shield(props: ThreeElements["mesh"]) {
     linesDensity,
     linesSpeed,
     junctionFade,
-  } = useDebugControls(
-    "🛡️ Shield",
+    shieldCenter,
+  } = useUniforms(
     {
-      radius: { name: "Radius", value: 2, min: 0.01, max: 6, step: 0.01 },
-      primaryColor: { name: "Primary Color", value: "#1d52d5" },
-      secondaryColor: { name: "Secondary Color", value: "#da263d" },
-      strength: { name: "Strength", value: 7, min: 0, max: 20, step: 0.01 },
-      edgeThickness: {
-        name: "Edge Thickness",
-        value: 5,
-        min: 1,
-        max: 10,
-        step: 0.1,
-      },
-      hexTilingX: { name: "Hex Tiling X", value: 6, min: 1, max: 20, step: 1 },
-      hexTilingY: { name: "Hex Tiling Y", value: 4, min: 1, max: 20, step: 1 },
-      linesDensity: {
-        name: "Lines Density",
-        value: 20,
-        min: 1,
-        max: 50,
-        step: 1,
-      },
-      linesSpeed: {
-        name: "Lines Speed",
-        value: 0.05,
-        min: 0,
-        max: 0.2,
-        step: 0.001,
-      },
-      junctionFade: {
-        name: "Junction Fade",
-        value: 0.2,
-        min: 0.01,
-        max: 1,
-        step: 0.01,
-      },
+      radius: 2,
+      primaryColor: "#1d52d5",
+      secondaryColor: "#da263d",
+      strength: 7,
+      edgeThickness: 5,
+      hexTilingX: 6,
+      hexTilingY: 4,
+      linesDensity: 20,
+      linesSpeed: 0.05,
+      junctionFade: 0.2,
+      shieldCenter: new Vector3(),
     },
     "shield-lesson",
-    { collapsed: true },
   );
 
   // Custom raycaster (sphere shape based)
@@ -256,10 +228,7 @@ function Shield(props: ThreeElements["mesh"]) {
       );
     })();
 
-    return {
-      positionNode,
-      emissiveNode,
-    };
+    return { positionNode, emissiveNode };
   }, [
     hexagonsTexture,
     impactsData,
@@ -275,8 +244,7 @@ function Shield(props: ThreeElements["mesh"]) {
   ]);
 
   // Shared nodes
-  const { shieldCenter } = useNodes<ShieldNodeScope>(() => {
-    const shieldCenter = uniform(new Vector3());
+  useNodes<ShieldNodeScope>(() => {
     const junctionNode = Fn(() => {
       const sdf = positionWorld.distance(shieldCenter).sub(radius);
       const junctionMask = sdf
@@ -287,9 +255,24 @@ function Shield(props: ThreeElements["mesh"]) {
 
       return mix(primaryColor, secondaryColor, junctionMask).mul(junctionMask);
     })();
-    return { junctionNode, shieldCenter };
+    return { junctionNode };
   }, "shield");
+
   useFrame(() => mesh.getWorldPosition(shieldCenter.value));
+
+  // Debug
+  useDebugControls("🛡️ Shield", {
+    radius: { target: radius, min: 0, max: 5, step: 0.1 },
+    primaryColor: { target: primaryColor },
+    secondaryColor: { target: secondaryColor },
+    strength: { target: strength, min: 0, max: 10, step: 0.1 },
+    edgeThickness: { target: edgeThickness, min: 0, max: 10, step: 0.1 },
+    hexTilingX: { target: hexTilingX, min: 0, max: 10, step: 1 },
+    hexTilingY: { target: hexTilingY, min: 0, max: 10, step: 1 },
+    linesDensity: { target: linesDensity, min: 0, max: 50, step: 1 },
+    linesSpeed: { target: linesSpeed, min: 0, max: 1, step: 0.01 },
+    junctionFade: { target: junctionFade, min: 0, max: 1, step: 0.1 },
+  });
 
   return (
     <>
@@ -316,22 +299,19 @@ function Shield(props: ThreeElements["mesh"]) {
 }
 
 function Floor(props: ThreeElements["mesh"]) {
+  // Assets load
   const diffuse = useTexture("/textures/grass.webp", (tex) => {
     tex.colorSpace = SRGBColorSpace;
   });
 
+  // Shader
   const shieldNodes = useNodes<ShieldNodeScope>("shield");
-
   const nodes = useMemo(() => {
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
     const mrtNode = mrt({ output, normal: vec4(0) });
     const emissiveNode = shieldNodes.junctionNode;
 
-    return {
-      opacityNode,
-      mrtNode,
-      emissiveNode,
-    };
+    return { opacityNode, mrtNode, emissiveNode };
   }, [shieldNodes]);
 
   return (
@@ -343,8 +323,7 @@ function Floor(props: ThreeElements["mesh"]) {
 }
 
 function Anvil(props: ThreeElements["group"]) {
-  const glb = useGLTF("/models/anvil.glb");
-
+  const glb = useAnvilGLB();
   const shieldNodes = useNodes<ShieldNodeScope>("shield");
 
   useLayoutEffect(() => {
@@ -357,6 +336,7 @@ function Anvil(props: ThreeElements["group"]) {
         const material = Array.isArray(mesh.material)
           ? mesh.material[0]
           : mesh.material;
+
         if (
           material.type === "MeshStandardMaterial" ||
           material.type === "MeshStandardNodeMaterial"

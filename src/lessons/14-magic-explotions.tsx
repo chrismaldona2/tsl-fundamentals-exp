@@ -1,6 +1,7 @@
 import {
   useFrame,
   useTexture,
+  useUniforms,
   type ThreeElements,
 } from "@react-three/fiber/webgpu";
 import {
@@ -34,7 +35,6 @@ import {
   output,
   positionLocal,
   texture,
-  uniform,
   uniformArray,
   uv,
   vec2,
@@ -77,36 +77,36 @@ function ExplosionsSystem({
     },
   );
 
-  // Debug
-  const controls = useDebugControls(
-    "🪄 Magic Explotions",
+  // Uniforms
+  const {
+    primaryEmissiveColor,
+    secondaryEmissiveColor,
+    emissiveStrength,
+    startIndex,
+  } = useUniforms(
     {
-      primaryEmissiveColor: {
-        name: "Primary Emissive Color",
-        value: "#1111ff",
-      },
-      secondaryEmissiveColor: {
-        name: "Secondary Emissive Color",
-        value: "#ff1111",
-      },
-      emissiveStrength: {
-        name: "Emissive Strength",
-        value: 20,
-        min: 1,
-        max: 100,
-        step: 0.01,
-      },
+      primaryEmissiveColor: "#1111ff",
+      secondaryEmissiveColor: "#ff1111",
+      emissiveStrength: 20,
+      startIndex: 0,
     },
     "magic-explotions-lesson",
   );
 
+  // Debug
+  useDebugControls("🪄 Magic Explotions", {
+    "Primary Emissive Color": { target: primaryEmissiveColor },
+    "Secondary Emissive Color": { target: secondaryEmissiveColor },
+    "Emissive Strength": {
+      target: emissiveStrength,
+      min: 1,
+      max: 100,
+      step: 0.01,
+    },
+  });
+
   // Shader nodes
   const { nodes, triggerExplotion } = useMemo(() => {
-    // Uniforms
-    const { primaryEmissiveColor, secondaryEmissiveColor, emissiveStrength } =
-      controls;
-    const startIndex = uniform(0, "uint");
-
     // Buffers setup
     const positionsBuffer = uniformArray<"vec3">([], "vec3");
     const radiusBuffer = uniformArray<"float">([], "float");
@@ -118,7 +118,9 @@ function ExplosionsSystem({
     }
 
     // Buffers
-    const arrayInstanceIndex = instanceIndex.add(startIndex).mod(maxCount);
+    const arrayInstanceIndex = instanceIndex
+      .add(startIndex.toUint())
+      .mod(maxCount);
     const position = positionsBuffer.element(arrayInstanceIndex);
     const radius = radiusBuffer.element(arrayInstanceIndex);
     const progress = progressBuffer.element(arrayInstanceIndex);
@@ -217,7 +219,13 @@ function ExplosionsSystem({
       },
       triggerExplotion,
     };
-  }, [noiseTexture, controls]);
+  }, [
+    noiseTexture,
+    primaryEmissiveColor,
+    secondaryEmissiveColor,
+    emissiveStrength,
+    startIndex,
+  ]);
 
   useEffect(() => {
     return registerTriggerFn?.(triggerExplotion);
@@ -320,7 +328,7 @@ function ExplosionShootingGround() {
 }
 
 function Floor(props: ThreeElements["mesh"]) {
-  const diffuseTexture = useTexture("/textures/grass.webp", (tex) => {
+  const colorTexture = useTexture("/textures/grass.webp", (tex) => {
     tex.colorSpace = SRGBColorSpace;
   });
 
@@ -345,7 +353,7 @@ function Floor(props: ThreeElements["mesh"]) {
       {...props}
     >
       <planeGeometry args={[10, 10, 1, 1]} />
-      <meshStandardNodeMaterial map={diffuseTexture} transparent {...nodes} />
+      <meshStandardNodeMaterial map={colorTexture} transparent {...nodes} />
     </mesh>
   );
 }

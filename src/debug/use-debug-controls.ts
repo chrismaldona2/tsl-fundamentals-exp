@@ -1,65 +1,54 @@
-import { useEffect, useState, useRef, useMemo } from "react";
-import {
-  normalizeSchema,
-  createPlainContainers,
-  collectUniformCandidates,
-  assembleNodes,
-} from "./core";
-import { renderTree } from "./controls";
-import { createDebugFolder, destroyDebugFolder } from "./inspector";
-import type { DebugSchema, DebugControlsResult, FolderOptions } from "./types";
-import { useUniforms } from "@react-three/fiber/webgpu";
+import { useEffect, useRef } from "react";
+import { mountControls } from "./core";
+import { mountRoot } from "./inspector";
+import type {
+  Dispose,
+  FolderNode,
+  FolderOptions,
+  Schema,
+  SchemaOf,
+} from "./types";
 
-/**
- * Registers controls with the Three.js Inspector and returns their live state or TSL uniforms.
- */
-export function useDebugControls<const T extends DebugSchema>(
-  folderName: string,
-  schema: T,
-  scope: string, // Ensures uniforms survives Suspense and HMR
+export function folder<const T extends Record<string, unknown>>(
+  children: SchemaOf<T>,
   options?: FolderOptions,
-): DebugControlsResult<T> {
-  // Parse schema
-  const [tree] = useState(() => normalizeSchema(schema));
-  const [plain] = useState(() => createPlainContainers(tree));
-  const [candidates] = useState(() => collectUniformCandidates(tree));
-  const [keys] = useState(() => Object.keys(candidates));
+): FolderNode;
 
-  // UniformNodes generation and final assemble
-  const r3fLedger = useUniforms(candidates, scope);
-  const ledgerRecord = r3fLedger as Record<string, unknown>;
-  const nodeDependencies = keys.map((key) => ledgerRecord[key]);
-  const nodes = useMemo(
-    () => assembleNodes(tree, plain, ledgerRecord),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tree, plain, ...nodeDependencies],
-  );
-
-  // Keep a ref of the latest schema on every render to ensure fresh closures
-  const schemaRef = useRef(schema);
-  schemaRef.current = schema;
-
-  // Bind to DOM Inspector
-  useEffect(() => {
-    const rootFolder = createDebugFolder(folderName);
-    if (options?.collapsed) rootFolder.close();
-
-    renderTree(rootFolder, tree, nodes, schemaRef);
-
-    return () => destroyDebugFolder(rootFolder);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [folderName, nodes]);
-
-  return nodes as DebugControlsResult<T>;
+export function folder(children: Schema, options?: FolderOptions): FolderNode {
+  return { isFolder: true, children, options };
 }
 
-/**
- * Wraps a nested schema to render it as a distinct folder group in the Three.js Inspector.
- */
-export function folder<const T extends DebugSchema>(
+export function useDebugControls<const T extends Record<string, unknown>>(
   name: string,
-  schema: T,
+  schema: SchemaOf<T>,
   options?: FolderOptions,
-) {
-  return { isFolderWrapper: true, name, schema, options } as const;
+): void;
+
+export function useDebugControls(
+  name: string,
+  schema: Schema,
+  options?: FolderOptions,
+): void {
+  const latest = useRef<Schema>(schema);
+  useEffect(() => {
+    latest.current = schema;
+  });
+
+  useEffect(() => {
+    const root = mountRoot(name, options);
+
+    let release: Dispose;
+    try {
+      release = mountControls(root.group, () => latest.current);
+    } catch (error) {
+      root.dispose();
+      throw error;
+    }
+
+    return () => {
+      release();
+      root.dispose();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name]);
 }

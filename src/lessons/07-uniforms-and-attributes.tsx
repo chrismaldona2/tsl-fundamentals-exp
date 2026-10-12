@@ -1,5 +1,5 @@
 // oxlint-disable react/purity
-import { type ThreeElements } from "@react-three/fiber/webgpu";
+import { useUniforms, type ThreeElements } from "@react-three/fiber/webgpu";
 import { useMemo } from "react";
 import { BufferAttribute, PlaneGeometry } from "three/webgpu";
 import { uv, positionWorld, time, mix, bufferAttribute } from "three/tsl";
@@ -55,51 +55,34 @@ function Floor(props: ThreeElements["mesh"]) {
 }
 
 function TorusKnot(props: ThreeElements["mesh"]) {
-  const { TorusKnot } = useDebugControls(
-    "📝 05 - Uniform and Attributes",
+  // Uniforms
+  const { frequency, speed, topColor, bottomColor } = useUniforms(
     {
-      TorusKnot: folder("Torus Knot", {
-        frequency: {
-          value: 4,
-          min: 0,
-          max: 10,
-          step: 0.1,
-          name: "Stripe Frequency",
-          uniform: true,
-        },
-        speed: {
-          value: 0.5,
-          min: 0,
-          max: 4,
-          step: 0.1,
-          name: "Animation Speed",
-          uniform: true,
-        },
-        topColor: { value: "#d2377a", name: "Top Color", uniform: true },
-        bottomColor: { value: "#258d5d", name: "Bottom Color", uniform: true },
-      }),
+      frequency: 4,
+      speed: 0.5,
+      topColor: "#d2377a",
+      bottomColor: "#258d5d",
     },
     "uniform-and-attributes-lesson",
-    { collapsed: true },
   );
 
+  // Shader
   const nodes = useMemo(() => {
-    const pattern = positionWorld.y
-      .mul(TorusKnot.frequency)
-      .sub(time.mul(TorusKnot.speed))
-      .fract();
+    const pattern = positionWorld.y.mul(frequency).sub(time.mul(speed)).fract();
+    const colorNode = mix(topColor, bottomColor, pattern);
 
-    const colorNode = mix(TorusKnot.topColor, TorusKnot.bottomColor, pattern);
+    return { colorNode };
+  }, [frequency, speed, topColor, bottomColor]);
 
-    return {
-      colorNode,
-    };
-  }, [
-    TorusKnot.frequency,
-    TorusKnot.bottomColor,
-    TorusKnot.topColor,
-    TorusKnot.speed,
-  ]);
+  // Debug
+  useDebugControls("📝 05 - Uniform and Attributes", {
+    "Torus Knot": folder({
+      frequency: { target: frequency, min: 0, max: 10, step: 0.1 },
+      speed: { target: speed, min: 0, max: 4, step: 0.1 },
+      topColor: { target: topColor },
+      bottomColor: { target: bottomColor },
+    }),
+  });
 
   return (
     <mesh castShadow receiveShadow {...props}>

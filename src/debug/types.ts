@@ -1,172 +1,94 @@
 import type { Color, Vector2, Vector3, Vector4 } from "three";
-import type { UniformNode } from "three/webgpu";
+import type { ParametersGroup } from "three/addons/inspector/tabs/Parameters.js";
 
-// API
-export type PlainVector =
-  | { x: number; y: number; z?: never; w?: never }
-  | { x: number; y: number; z: number; w?: never }
-  | { x: number; y: number; z: number; w: number };
+export type RefLike<T> = { readonly current: T | null };
+export type Unwrap<T> = NonNullable<T extends RefLike<infer U> ? U : T>;
 
-export type AnyVectorInput = Vector2 | Vector3 | Vector4 | PlainVector;
-export type AnyVectorOutput = Vector2 | Vector3 | Vector4;
-export type OptionValue = string | number | boolean;
+type Vector = Vector2 | Vector3 | Vector4;
+type Editable = number | boolean | string | Color | Vector;
 
-export type FolderOptions = {
-  /** Determines if the folder starts closed on the initial render. */
-  readonly collapsed?: boolean;
+export type ValueOf<P> = P extends { value: infer U }
+  ? U extends Editable
+    ? U
+    : never
+  : P extends Editable
+    ? P
+    : never;
+
+export type EditableKeys<T> = {
+  [K in keyof T]-?: [ValueOf<T[K]>] extends [never] ? never : K;
+}[keyof T];
+
+type Common<V> = {
+  readonly onChange?: (value: V) => void;
 };
 
-export type FolderWrapper<T> = {
-  readonly isFolderWrapper: true;
-  readonly name: string;
-  readonly schema: T;
-  readonly options?: FolderOptions;
-};
+type Choice = string | number | boolean;
+type Choices<V> = readonly V[] | Readonly<Record<string, V>>;
 
-export type BaseControl<TInput, TOutput = TInput> = {
-  readonly value: TInput;
-  readonly name?: string;
-  readonly uniform?: boolean;
-  onChange?(value: TOutput): void;
-};
-
-export type NumberControl = BaseControl<number> & {
+export type NumberOptions = {
   readonly min?: number;
   readonly max?: number;
   readonly step?: number;
 };
 
-export type OptionsControl<T extends OptionValue = OptionValue> =
-  BaseControl<T> & {
-    readonly options: readonly T[] | Record<string, T>;
+type AxisLabels = Partial<Record<"x" | "y" | "z" | "w", string>>;
+
+export type FolderOptions = { readonly collapsed?: boolean };
+
+export type ControlConfig = Common<never> &
+  NumberOptions & {
+    readonly labels?: AxisLabels;
+    readonly collapsed?: boolean;
+    readonly options?: Choices<Choice>;
   };
 
-export type ColorControl = BaseControl<`#${string}` | Color>;
-export type BooleanControl = BaseControl<boolean>;
-export type StringControl = BaseControl<string>;
-
-export type VectorBounds =
-  | number
-  | {
-      readonly x?: number;
-      readonly y?: number;
-      readonly z?: number;
-      readonly w?: number;
-    };
-export type VectorLabels = {
-  readonly x?: string;
-  readonly y?: string;
-  readonly z?: string;
-  readonly w?: string;
+export type ControlNode = ControlConfig & {
+  readonly target: unknown;
+  readonly property?: string;
 };
 
-export type VectorControl = BaseControl<AnyVectorInput, AnyVectorOutput> & {
-  readonly min?: VectorBounds;
-  readonly max?: VectorBounds;
-  readonly step?: VectorBounds;
-  readonly labels?: VectorLabels;
-  readonly collapsed?: boolean;
+export interface FolderNode {
+  readonly isFolder: true;
+  readonly children: Schema;
+  readonly options?: FolderOptions;
+}
+
+export type SchemaNode = ControlNode | FolderNode;
+export type Schema = Readonly<Record<string, SchemaNode>>;
+
+type Tgt<T> = Unwrap<T>;
+
+type Val<T> = [ValueOf<Tgt<T>>] extends [never]
+  ? ValueOf<Tgt<T>[EditableKeys<Tgt<T>>]>
+  : ValueOf<Tgt<T>>;
+
+type Prop<T> = [ValueOf<Tgt<T>>] extends [never]
+  ? EditableKeys<Tgt<T>>
+  : "value";
+
+type Opt<V, U, X> = [Extract<V, U>] extends [never] ? never : X;
+
+export type Leaf<T> = {
+  readonly target: T;
+  readonly property?: Prop<T>;
+  readonly min?: Opt<Val<T>, number | Vector, number>;
+  readonly max?: Opt<Val<T>, number | Vector, number>;
+  readonly step?: Opt<Val<T>, number | Vector, number>;
+  readonly labels?: Opt<Val<T>, Vector, AxisLabels>;
+  readonly collapsed?: Opt<Val<T>, Vector, boolean>;
+  readonly options?: Opt<Val<T>, Choice, Choices<Extract<Val<T>, Choice>>>;
+  onChange?(value: Val<T>): void;
 };
 
-export type ButtonControl = () => void;
-
-export type ControlConfig =
-  | NumberControl
-  | OptionsControl
-  | ColorControl
-  | BooleanControl
-  | StringControl
-  | VectorControl;
-
-export type SchemaValue =
-  | number
-  | string
-  | boolean
-  | `#${string}`
-  | Color
-  | AnyVectorInput
-  | ControlConfig
-  | ButtonControl;
-
-export type DebugSchema = {
-  readonly [key: string]: SchemaValue | DebugSchema | FolderWrapper<unknown>;
+export type SchemaOf<T> = {
+  readonly [K in keyof T]: Leaf<T[K]> | FolderNode;
 };
 
-// Inference logic
-type ResolveUniform<T> = T extends Color | `#${string}`
-  ? UniformNode<"color", Color>
-  : T extends Vector4 | { x: number; y: number; z: number; w: number }
-    ? UniformNode<"vec4", Vector4>
-    : T extends Vector3 | { x: number; y: number; z: number }
-      ? UniformNode<"vec3", Vector3>
-      : T extends Vector2 | { x: number; y: number }
-        ? UniformNode<"vec2", Vector2>
-        : T extends boolean
-          ? UniformNode<"bool", boolean>
-          : T extends number
-            ? UniformNode<"float", number>
-            : { value: T };
-
-export type DebugControlsResult<T> = {
-  -readonly [K in keyof T as T[K] extends ButtonControl
-    ? never
-    : K]: T[K] extends FolderWrapper<infer S>
-    ? DebugControlsResult<S>
-    : T[K] extends { readonly uniform: false; readonly value: infer V }
-      ? { value: V extends PlainVector ? AnyVectorOutput : V }
-      : T[K] extends { readonly options: unknown; readonly value: infer V }
-        ? { value: V }
-        : T[K] extends BaseControl<infer V, any>
-          ? ResolveUniform<V>
-          : T[K] extends DebugSchema
-            ? DebugControlsResult<T[K]>
-            : ResolveUniform<T[K]>;
+export type Group = ParametersGroup;
+export type Dispose = () => void;
+export type Slot<T> = { get(): T; set(value: T): void };
+export type ControlSpec = {
+  readonly name: string;
+  readonly onChange?: () => void;
 };
-
-// Internal AST
-export type NormalizedControl =
-  | {
-      kind: "number";
-      value: number;
-      min?: number;
-      max?: number;
-      step?: number;
-      name: string;
-      uniform: boolean;
-    }
-  | { kind: "boolean"; value: boolean; name: string; uniform: boolean }
-  | { kind: "string"; value: string; name: string; uniform: boolean }
-  | { kind: "color"; value: Color; name: string; uniform: boolean }
-  | {
-      kind: "vector";
-      value: AnyVectorOutput;
-      name: string;
-      uniform: boolean;
-      min?: VectorBounds;
-      max?: VectorBounds;
-      step?: VectorBounds;
-      collapsed?: boolean;
-      labels?: VectorLabels;
-    }
-  | {
-      kind: "options";
-      value: OptionValue;
-      options: readonly OptionValue[] | Record<string, OptionValue>;
-      name: string;
-      uniform: boolean;
-    }
-  | { kind: "button"; name: string };
-
-export type NormalizedFolder = {
-  kind: "folder";
-  name: string;
-  collapsed: boolean;
-  children: Record<string, NormalizedNode>;
-};
-
-export type NormalizedNode = NormalizedControl | NormalizedFolder;
-
-export type UniformLeaf = Extract<
-  NormalizedNode,
-  { kind: "number" | "boolean" | "color" | "vector" }
->;

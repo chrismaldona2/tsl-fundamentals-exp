@@ -2,6 +2,7 @@ import {
   useTexture,
   useFrame,
   useThree,
+  useUniforms,
   type ThreeElements,
 } from "@react-three/fiber/webgpu";
 import {
@@ -17,7 +18,6 @@ import {
   type Material,
   type Mesh,
   type PointLight,
-  type MeshStandardMaterial,
   SRGBColorSpace,
 } from "three/webgpu";
 import {
@@ -35,14 +35,12 @@ import {
   positionGeometry,
   range,
   TWO_PI,
-  uniform,
   uv,
   vec3,
   vec4,
 } from "three/tsl";
-import { useGLTF } from "@react-three/drei/webgpu";
-import type { GLTF } from "three/examples/jsm/Addons.js";
 import { folder, useDebugControls } from "../debug/use-debug-controls";
+import { useAnvilGLB } from "../hooks/use-anvil-glb";
 
 export default function AnvilLesson(props: ThreeElements["group"]) {
   return (
@@ -53,30 +51,12 @@ export default function AnvilLesson(props: ThreeElements["group"]) {
   );
 }
 
-// GLB Loader
-type GLTFResult = GLTF & {
-  nodes: {
-    anvil: Mesh;
-    hammer: Mesh;
-    blade: Mesh;
-  };
-  materials: {
-    ["Material.001"]: MeshStandardMaterial;
-    color: MeshStandardMaterial;
-    blade: MeshStandardMaterial;
-  };
-};
-const anvilUrl = "/models/anvil.glb";
-function useAnvilGLB(): GLTFResult {
-  return useGLTF(anvilUrl) as unknown as GLTFResult;
-}
-useGLTF.preload(anvilUrl);
-
 // API Types
 type HammerHandle = { strike(): void };
 type BladeHandle = { heat(amount?: number): void };
 type SparklesHandle = { explode(lightIntensity?: number): void };
 
+// Main component
 function Anvil(props: ThreeElements["group"]) {
   const glb = useAnvilGLB();
   const hammer = useRef<HammerHandle>(null);
@@ -159,47 +139,28 @@ function Blade({ ref }: { ref?: Ref<BladeHandle> }) {
     }
   }, [glb.materials]);
 
-  // Debug
-  const controls = useDebugControls(
-    "⚒️ Anvil",
+  // Uniforms
+  const {
+    impactOffset,
+    impactPropagation,
+    colorCenter,
+    colorEdges,
+    emissiveStrength,
+    effectStrength,
+  } = useUniforms(
     {
-      blade: folder("Blade", {
-        impactOffset: {
-          name: "Impact Offset",
-          value: { x: 0, y: 0, z: 0.3 },
-          min: -1,
-          max: 1,
-          step: 0.001,
-          labels: { x: "X", y: "Y", z: "Z" },
-          collapsed: true,
-        },
-        impactPropagation: {
-          name: "Impact Propagation",
-          value: 1,
-          min: 0,
-          max: 4,
-          step: 0.001,
-        },
-        colorCenter: { name: "Color Center", value: "#ff007b" },
-        colorEdges: { name: "Color Edges", value: "#ffb070" },
-        emissiveStrength: { value: 1.5, min: 0, max: 5, step: 0.01 },
-      }),
+      impactOffset: { x: 0, y: 0, z: 0.3 },
+      impactPropagation: 1,
+      colorCenter: "#ff007b",
+      colorEdges: "#ffb070",
+      emissiveStrength: 1.5,
+      effectStrength: 0,
     },
-    "anvil-lesson",
+    "anvil-blade",
   );
 
   // Shader
-  const { nodes, effectStrength } = useMemo(() => {
-    // Uniforms
-    const effectStrength = uniform(0);
-    const {
-      impactOffset,
-      impactPropagation,
-      colorCenter,
-      colorEdges,
-      emissiveStrength,
-    } = controls.blade;
-
+  const { nodes } = useMemo(() => {
     // Emissiveness
     const emissiveNode = Fn(() => {
       const mask = grayscale(materialColor.rgb).remapClamp(0, 0.13, 1, 0);
@@ -218,9 +179,15 @@ function Blade({ ref }: { ref?: Ref<BladeHandle> }) {
 
     return {
       nodes: { emissiveNode },
-      effectStrength,
     };
-  }, [controls.blade]);
+  }, [
+    impactOffset,
+    impactPropagation,
+    colorCenter,
+    colorEdges,
+    emissiveStrength,
+    effectStrength,
+  ]);
 
   // API
   useImperativeHandle(
@@ -239,6 +206,37 @@ function Blade({ ref }: { ref?: Ref<BladeHandle> }) {
 
     // oxlint-disable-next-line react/immutability
     effectStrength.value += (0 - effectStrength.value) * dt * 0.5;
+  });
+
+  // Debug
+  useDebugControls("⚒️ Anvil", {
+    Blade: folder(
+      {
+        "Impact Offset": {
+          target: impactOffset,
+          min: -1,
+          max: 1,
+          step: 0.001,
+          labels: { x: "X", y: "Y", z: "Z" },
+          collapsed: true,
+        },
+        "Impact Propagation": {
+          target: impactPropagation,
+          min: 0,
+          max: 4,
+          step: 0.001,
+        },
+        "Color Center": { target: colorCenter },
+        "Color Edges": { target: colorEdges },
+        "Emissive Strength": {
+          target: emissiveStrength,
+          min: 0,
+          max: 5,
+          step: 0.01,
+        },
+      },
+      { collapsed: true },
+    ),
   });
 
   return (
@@ -261,57 +259,32 @@ function Sparkles({ ref }: { ref?: Ref<SparklesHandle> }) {
   const count = 2000;
   const explosionCount = 150;
 
-  // Debug
-  const controls = useDebugControls(
-    "⚒️ Anvil",
+  // Uniforms
+  const {
+    origin,
+    groundHeight,
+    size,
+    decay,
+    colorA,
+    colorB,
+    emissiveStrength,
+    sparklesIndex,
+  } = useUniforms(
     {
-      sparkles: folder("Sparkles", {
-        origin: {
-          name: "Origin",
-          value: { x: 0.05, y: 1.95, z: -0.1 },
-          min: -1,
-          max: 1,
-          step: 0.001,
-          labels: { x: "X", y: "Y", z: "Z" },
-          collapsed: true,
-        },
-        groundHeight: {
-          name: "Ground Height",
-          value: 0,
-          min: -1,
-          max: 1,
-          step: 0.001,
-        },
-        size: { name: "Size", value: 0.05, min: 0.001, max: 0.2, step: 0.001 },
-        decay: { name: "Life Decay", value: 0.3, min: 0, max: 1, step: 0.001 },
-        colorA: { name: "Color A", value: "#ffb070" },
-        colorB: { name: "Color B", value: "#ffbb00" },
-        emissiveStrength: {
-          name: "Emissive Strength",
-          value: 45,
-          min: 0,
-          max: 150,
-          step: 0.1,
-        },
-      }),
+      origin: { x: 0.05, y: 1.95, z: -0.1 },
+      groundHeight: 0,
+      size: 0.05,
+      decay: 0.3,
+      colorA: "#ffb070",
+      colorB: "#ffbb00",
+      emissiveStrength: 45,
+      sparklesIndex: 0,
     },
-    "anvil-lesson",
+    "anvil-sparkles",
   );
 
   // Shader
-  const { sparklesIndex, computeNodes, nodes } = useMemo(() => {
-    // Uniforms
-    const {
-      groundHeight,
-      size,
-      decay,
-      colorA,
-      colorB,
-      emissiveStrength,
-      origin,
-    } = controls.sparkles;
-    const sparklesIndex = uniform(0, "uint");
-
+  const { computeNodes, nodes } = useMemo(() => {
     // Buffers
     const positions = instancedArray(count, "vec3");
     const velocities = instancedArray(count, "vec3");
@@ -324,7 +297,7 @@ function Sparkles({ ref }: { ref?: Ref<SparklesHandle> }) {
     })().compute(count);
 
     const explodeCompute = Fn(() => {
-      const currentIndex = instanceIndex.add(sparklesIndex).mod(count);
+      const currentIndex = instanceIndex.add(sparklesIndex.toUint()).mod(count);
       const position = positions.element(currentIndex);
       const velocity = velocities.element(currentIndex);
       const life = lives.element(currentIndex);
@@ -379,18 +352,19 @@ function Sparkles({ ref }: { ref?: Ref<SparklesHandle> }) {
 
     return {
       sparklesIndex,
-      computeNodes: {
-        initCompute,
-        explodeCompute,
-        updateCompute,
-      },
-      nodes: {
-        positionNode,
-        scaleNode,
-        emissiveNode,
-      },
+      computeNodes: { initCompute, explodeCompute, updateCompute },
+      nodes: { positionNode, scaleNode, emissiveNode },
     };
-  }, [controls.sparkles]);
+  }, [
+    origin,
+    groundHeight,
+    size,
+    decay,
+    colorA,
+    colorB,
+    emissiveStrength,
+    sparklesIndex,
+  ]);
 
   // Initialize particles (hidden)
   useLayoutEffect(() => {
@@ -413,7 +387,7 @@ function Sparkles({ ref }: { ref?: Ref<SparklesHandle> }) {
     [renderer, computeNodes.explodeCompute, sparklesIndex],
   );
 
-  // Loop
+  // Animation
   useFrame((_, delta) => {
     const dt = Math.min(delta, 1 / 30);
 
@@ -423,6 +397,34 @@ function Sparkles({ ref }: { ref?: Ref<SparklesHandle> }) {
     // Automatic light reset
     const light = lightRef.current;
     if (light) light.intensity += (5 - light.intensity) * dt * 3;
+  });
+
+  // Debug
+  useDebugControls("⚒️ Anvil", {
+    Sparkles: folder(
+      {
+        Origin: {
+          target: origin,
+          min: -1,
+          max: 1,
+          step: 0.001,
+          labels: { x: "X", y: "Y", z: "Z" },
+          collapsed: true,
+        },
+        "Ground Height": { target: groundHeight, min: -1, max: 1, step: 0.001 },
+        Size: { target: size, min: 0.001, max: 0.2, step: 0.001 },
+        "Life Decay": { target: decay, min: 0, max: 1, step: 0.001 },
+        "Color A": { target: colorA },
+        "Color B": { target: colorB },
+        "Emissive Strength": {
+          target: emissiveStrength,
+          min: 0,
+          max: 150,
+          step: 0.1,
+        },
+      },
+      { collapsed: true },
+    ),
   });
 
   return (
@@ -440,6 +442,7 @@ function Sparkles({ ref }: { ref?: Ref<SparklesHandle> }) {
   );
 }
 
+// Optimized hitbox for user interaction
 function HitBox({ onHit }: { onHit: () => void }) {
   const renderer = useThree((s) => s.renderer);
   const isHovered = useRef(false);
@@ -475,19 +478,19 @@ function HitBox({ onHit }: { onHit: () => void }) {
   );
 }
 
+// Scene floor
 function Floor(props: ThreeElements["mesh"]) {
+  // Assets load
   const diffuse = useTexture("/textures/grass.webp", (tex) => {
     tex.colorSpace = SRGBColorSpace;
   });
 
+  // Shader
   const nodes = useMemo(() => {
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
     const mrtNode = mrt({ output, normal: vec4(0) });
 
-    return {
-      opacityNode,
-      mrtNode,
-    };
+    return { opacityNode, mrtNode };
   }, []);
 
   return (

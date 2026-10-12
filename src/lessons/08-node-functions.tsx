@@ -1,8 +1,8 @@
-import { type ThreeElements } from "@react-three/fiber/webgpu";
+import { useUniforms, type ThreeElements } from "@react-three/fiber/webgpu";
 import { useMemo } from "react";
 import { uv, float, vec3, vec2, bool, Fn, If, uint, Loop } from "three/tsl";
 import type { Node } from "three/webgpu";
-import { useDebugControls } from "../debug/use-debug-controls";
+import { folder, useDebugControls } from "../debug/use-debug-controls";
 
 export default function NodeFunctionsLesson(props: ThreeElements["group"]) {
   return (
@@ -98,51 +98,14 @@ const circles = Fn(
 );
 
 function Floor(props: ThreeElements["mesh"]) {
-  const uniforms = useDebugControls(
-    "🧩 06 - Node Functions",
-    {
-      invert: {
-        name: "Invert",
-        value: false,
-        uniform: true,
-      },
-      discard: {
-        name: "Discard",
-        value: false,
-        uniform: true,
-      },
-      radius: {
-        name: "Radius",
-        value: 0.075,
-        min: 0,
-        max: 1,
-        step: 0.001,
-        uniform: true,
-      },
-      thickness: {
-        name: "Thickness",
-        value: 0.02,
-        min: 0,
-        max: 0.1,
-        step: 0.01,
-        uniform: true,
-      },
-      count: {
-        name: "Count",
-        value: 5,
-        min: 0,
-        max: 15,
-        step: 1,
-        uniform: true,
-      },
-    },
+  // Uniforms
+  const { invert, discard, radius, thickness, count } = useUniforms(
+    { invert: false, discard: false, radius: 0.075, thickness: 0.02, count: 5 },
     "node-functions-lesson",
-    { collapsed: true },
   );
 
+  // Shader
   const nodes = useMemo(() => {
-    const { radius, thickness, invert, discard, count } = uniforms;
-
     const colorNode = vec3(
       circles({
         radius,
@@ -154,11 +117,19 @@ function Floor(props: ThreeElements["mesh"]) {
     );
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
 
-    return {
-      colorNode,
-      opacityNode,
-    };
-  }, [uniforms]);
+    return { colorNode, opacityNode };
+  }, [invert, discard, radius, thickness, count]);
+
+  // Debug
+  useDebugControls("🧩 06 - Node Functions", {
+    Floor: folder({
+      invert: { target: invert },
+      discard: { target: discard },
+      radius: { target: radius, min: 0, max: 1, step: 0.001 },
+      thickness: { target: thickness, min: 0, max: 0.1, step: 0.01 },
+      count: { target: count, min: 0, max: 15, step: 1 },
+    }),
+  });
 
   return (
     <mesh rotation-x={-Math.PI / 2} receiveShadow {...props}>

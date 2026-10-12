@@ -1,6 +1,7 @@
 import {
   useFrame,
   useTexture,
+  useUniforms,
   type ThreeElements,
 } from "@react-three/fiber/webgpu";
 import { useLayoutEffect, useMemo, useRef } from "react";
@@ -153,28 +154,30 @@ export function Method_3(props: ThreeElements["group"]) {
   const meshRef = useRef<Mesh>(null);
   const count = 5;
 
-  // Debug
-  const controls = useDebugControls(
-    "Instances",
-    {
-      count: {
-        value: count,
-        min: 1,
-        max: 20,
-        step: 1,
-        onChange: (v: number) => {
-          if (meshRef.current) meshRef.current.count = v;
-        },
-      },
-    },
+  // Uniforms
+  const { instanceCount } = useUniforms(
+    { instanceCount: count },
     "instances-lesson",
   );
+
+  // Debug
+  useDebugControls("Instances", {
+    Count: {
+      target: instanceCount,
+      min: 1,
+      max: 20,
+      step: 1,
+      onChange: (v) => {
+        if (meshRef.current) meshRef.current.count = v;
+      },
+    },
+  });
 
   // Shader
   const nodes = useMemo(
     () => ({
       positionNode: Fn(() => {
-        const progress = instanceIndex.toFloat().div(controls.count.sub(1));
+        const progress = instanceIndex.toFloat().div(instanceCount.sub(1));
 
         // Wave
         const wave = time.add(positionLocal.y.mul(3)).sin().mul(0.25);
@@ -190,7 +193,7 @@ export function Method_3(props: ThreeElements["group"]) {
         return positionLocal;
       })(),
     }),
-    [controls],
+    [instanceCount],
   );
 
   return (
@@ -488,7 +491,7 @@ export function Method_8(props: ThreeElements["group"]) {
 }
 
 function Floor(props: ThreeElements["mesh"]) {
-  const diffuseTexture = useTexture("/textures/grass.webp", (tex) => {
+  const colorTexture = useTexture("/textures/grass.webp", (tex) => {
     tex.colorSpace = SRGBColorSpace;
   });
 
@@ -505,7 +508,7 @@ function Floor(props: ThreeElements["mesh"]) {
   return (
     <mesh rotation-x={-Math.PI / 2} renderOrder={-1} receiveShadow {...props}>
       <planeGeometry args={[10, 10, 1, 1]} />
-      <meshStandardNodeMaterial transparent map={diffuseTexture} {...nodes} />
+      <meshStandardNodeMaterial transparent map={colorTexture} {...nodes} />
     </mesh>
   );
 }

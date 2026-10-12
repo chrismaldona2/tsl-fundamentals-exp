@@ -24,7 +24,7 @@ export default function SpritesLesson(props: ThreeElements["group"]) {
   );
 }
 
-function Sprites(props: ThreeElements["sprite"]) {
+export function Sprites(props: ThreeElements["sprite"]) {
   const { nodes } = useMemo(() => {
     const positionNode = range(vec3(-3, 0, -3), vec3(3, 3, 3));
     const scaleNode = range(0.01, 0.03);
@@ -43,7 +43,7 @@ function Sprites(props: ThreeElements["sprite"]) {
   );
 }
 
-function SpritesWithMesh(props: ThreeElements["mesh"]) {
+export function SpritesWithMesh(props: ThreeElements["mesh"]) {
   const { nodes } = useMemo(() => {
     const positionNode = range(vec3(-3, 0, -3), vec3(3, 3, 3));
     const scaleNode = range(0.2, 0.5);
@@ -84,7 +84,7 @@ function StressTest(props: ThreeElements["sprite"]) {
 }
 
 function Floor(props: ThreeElements["mesh"]) {
-  const diffuseTexture = useTexture("/textures/grass.webp", (tex) => {
+  const colorTexture = useTexture("/textures/grass.webp", (tex) => {
     tex.colorSpace = SRGBColorSpace;
   });
 
@@ -101,7 +101,7 @@ function Floor(props: ThreeElements["mesh"]) {
   return (
     <mesh rotation-x={-Math.PI / 2} renderOrder={-1} receiveShadow {...props}>
       <planeGeometry args={[10, 10, 1, 1]} />
-      <meshStandardNodeMaterial map={diffuseTexture} transparent {...nodes} />
+      <meshStandardNodeMaterial map={colorTexture} transparent {...nodes} />
     </mesh>
   );
 }
