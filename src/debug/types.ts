@@ -5,23 +5,40 @@ export type RefLike<T> = { readonly current: T | null };
 export type Unwrap<T> = NonNullable<T extends RefLike<infer U> ? U : T>;
 
 type Vector = Vector2 | Vector3 | Vector4;
+
 type Editable = number | boolean | string | Color | Vector;
 
-export type ValueOf<P> = P extends { value: infer U }
+type DirectValue = Color | Vector;
+type Wrapped<P> = P extends { value: infer U }
   ? U extends Editable
     ? U
     : never
-  : P extends Editable
+  : never;
+
+/** What a *property* can hold: primitives, Color/Vector, or a { value } wrapper. */
+export type ValueOf<P> = [Wrapped<P>] extends [never]
+  ? P extends Editable
     ? P
-    : never;
+    : never
+  : Wrapped<P>;
+
+/** What a *target* can be on its own: a { value } wrapper or a bare Color/Vector. */
+type SelfValue<P> = [Wrapped<P>] extends [never]
+  ? P extends DirectValue
+    ? P
+    : never
+  : Wrapped<P>;
+
+type ValueLeaf<T> = [SelfValue<Tgt<T>>] extends [never]
+  ? never
+  : Config<SelfValue<Tgt<T>>> & {
+      readonly target: T;
+      readonly property?: Tgt<T> extends DirectValue ? never : "value";
+    };
 
 export type EditableKeys<T> = {
   [K in keyof T]-?: [ValueOf<T[K]>] extends [never] ? never : K;
 }[keyof T];
-
-type Common<V> = {
-  readonly onChange?: (value: V) => void;
-};
 
 type Choice = string | number | boolean;
 type Choices<V> = readonly V[] | Readonly<Record<string, V>>;
@@ -36,12 +53,12 @@ type AxisLabels = Partial<Record<"x" | "y" | "z" | "w", string>>;
 
 export type FolderOptions = { readonly collapsed?: boolean };
 
-export type ControlConfig = Common<never> &
-  NumberOptions & {
-    readonly labels?: AxisLabels;
-    readonly collapsed?: boolean;
-    readonly options?: Choices<Choice>;
-  };
+export type ControlConfig = NumberOptions & {
+  readonly onChange?: (value: unknown) => void;
+  readonly labels?: AxisLabels;
+  readonly collapsed?: boolean;
+  readonly options?: Choices<Choice>;
+};
 
 export type ControlNode = ControlConfig & {
   readonly target: unknown;
@@ -54,36 +71,39 @@ export interface FolderNode {
   readonly options?: FolderOptions;
 }
 
-export type SchemaNode = ControlNode | FolderNode;
+export type SchemaNode = ControlNode | FolderNode | (() => void);
+
+export type SchemaOf<T> = {
+  readonly [K in keyof T]: Leaf<T[K]> | FolderNode | (() => void);
+};
+
 export type Schema = Readonly<Record<string, SchemaNode>>;
 
 type Tgt<T> = Unwrap<T>;
 
-type Val<T> = [ValueOf<Tgt<T>>] extends [never]
-  ? ValueOf<Tgt<T>[EditableKeys<Tgt<T>>]>
-  : ValueOf<Tgt<T>>;
-
-type Prop<T> = [ValueOf<Tgt<T>>] extends [never]
-  ? EditableKeys<Tgt<T>>
-  : "value";
-
 type Opt<V, U, X> = [Extract<V, U>] extends [never] ? never : X;
 
-export type Leaf<T> = {
-  readonly target: T;
-  readonly property?: Prop<T>;
-  readonly min?: Opt<Val<T>, number | Vector, number>;
-  readonly max?: Opt<Val<T>, number | Vector, number>;
-  readonly step?: Opt<Val<T>, number | Vector, number>;
-  readonly labels?: Opt<Val<T>, Vector, AxisLabels>;
-  readonly collapsed?: Opt<Val<T>, Vector, boolean>;
-  readonly options?: Opt<Val<T>, Choice, Choices<Extract<Val<T>, Choice>>>;
-  onChange?(value: Val<T>): void;
+type Config<V> = {
+  readonly min?: Opt<V, number | Vector, number>;
+  readonly max?: Opt<V, number | Vector, number>;
+  readonly step?: Opt<V, number | Vector, number>;
+  readonly labels?: Opt<V, Vector, AxisLabels>;
+  readonly collapsed?: Opt<V, Vector, boolean>;
+  readonly options?: Opt<V, Choice, Choices<Extract<V, Choice>>>;
+  onChange?(value: V): void;
 };
 
-export type SchemaOf<T> = {
-  readonly [K in keyof T]: Leaf<T[K]> | FolderNode;
-};
+type KeyLeaf<T> =
+  Tgt<T> extends object
+    ? {
+        [K in EditableKeys<Tgt<T>>]: Config<ValueOf<Tgt<T>[K]>> & {
+          readonly target: T;
+          readonly property: K;
+        };
+      }[EditableKeys<Tgt<T>>]
+    : never;
+
+export type Leaf<T> = ValueLeaf<T> | KeyLeaf<T>;
 
 export type Group = ParametersGroup;
 export type Dispose = () => void;

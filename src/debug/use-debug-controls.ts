@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { mountControls } from "./core";
 import { mountRoot } from "./inspector";
 import type {
@@ -18,19 +18,23 @@ export function folder(children: Schema, options?: FolderOptions): FolderNode {
   return { isFolder: true, children, options };
 }
 
+const NO_DEPS: readonly unknown[] = [];
+
 export function useDebugControls<const T extends Record<string, unknown>>(
   name: string,
   schema: SchemaOf<T>,
   options?: FolderOptions,
+  deps?: readonly unknown[],
 ): void;
 
 export function useDebugControls(
   name: string,
   schema: Schema,
   options?: FolderOptions,
+  deps: readonly unknown[] = NO_DEPS,
 ): void {
   const latest = useRef<Schema>(schema);
-  useEffect(() => {
+  useLayoutEffect(() => {
     latest.current = schema;
   });
 
@@ -50,5 +54,5 @@ export function useDebugControls(
       root.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name]);
+  }, [name, ...deps]);
 }

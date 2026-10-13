@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Lights from "./lights";
 import GizmoManager from "./gizmo-manager";
-import AnvilLesson from "../lessons/17-anvil";
+import ClairObscurTitleLesson from "../lessons/18-clair-obscur-title";
 
 export default function Scene() {
   return (
@@ -9,7 +9,7 @@ export default function Scene() {
       <Lights />
       <GizmoManager />
       <Suspense fallback={null}>
-        <AnvilLesson />
+        <ClairObscurTitleLesson />
       </Suspense>
     </>
   );
