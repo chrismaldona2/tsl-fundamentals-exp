@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Lights from "./lights";
 import GizmoManager from "./gizmo-manager";
-import SpheresParticlesPhysicsLesson from "../lessons/19-spheres-particles-physics";
+import StylizedNatureSceneLesson from "../lessons/20-stylized-nature-scene";
 
 export default function Scene() {
   return (
@@ -9,7 +9,7 @@ export default function Scene() {
       <Lights />
       <GizmoManager />
       <Suspense fallback={null}>
-        <SpheresParticlesPhysicsLesson />
+        <StylizedNatureSceneLesson />
       </Suspense>
     </>
   );
