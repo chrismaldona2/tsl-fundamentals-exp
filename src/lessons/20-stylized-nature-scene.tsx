@@ -1,11 +1,7 @@
 // oxlint-disable react/purity
-import {
-  useTexture,
-  useThree,
-  useUniforms,
-  type ThreeElements,
-} from "@react-three/fiber/webgpu";
-import { useLayoutEffect, useMemo } from "react";
+import { useTexture, useThree, type ThreeElements } from "@react-three/fiber";
+import { useLocalNodes, useUniforms } from "@react-three/tsl";
+import { useLayoutEffect, useState } from "react";
 import {
   BufferGeometry,
   DoubleSide,
@@ -74,7 +70,7 @@ function Terrain(props: ThreeElements["mesh"]) {
   const dataTexture = useTexture("/textures/floor-data.png");
 
   // Shader
-  const { nodes, computeNodes, normalTexture } = useMemo(() => {
+  const { nodes, computeNodes, normalTexture } = useLocalNodes(() => {
     // Compute normal
     const resolution = 32;
     const normalTexture = new StorageTexture(resolution, resolution); // Not compatible with WebGL
@@ -109,7 +105,7 @@ function Terrain(props: ThreeElements["mesh"]) {
       computeNodes: { computeNormal },
       normalTexture,
     };
-  }, [dataTexture]);
+  }, []);
 
   useLayoutEffect(() => {
     renderer.compute(computeNodes.computeNormal);
@@ -188,7 +184,7 @@ function Grass({
   );
 
   // Triangle geometry
-  const geometry = useMemo(() => {
+  const [geometry] = useState(() => {
     const vertexPositions = new Float32Array(3 * 2);
     // Vertex 0
     vertexPositions[0] = 0.25;
@@ -211,7 +207,7 @@ function Grass({
       Math.hypot(halfSize, halfSize),
     );
     return geometry;
-  }, [halfSize]);
+  });
 
   // Uniforms
   const {
@@ -232,11 +228,11 @@ function Grass({
       bendAmplitude: 0.1,
       cullThreshold: 0.1,
     },
-    "stylized-natuer-scene-lesson-grass",
+    "stylized-nature-scene-lesson-grass",
   );
 
   // Shader
-  const { nodes } = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     // Buffers
     const instancePositionsArray = new Float32Array(count * 2);
     for (let iX = 0; iX < subdivisions; iX++) {
@@ -351,27 +347,8 @@ function Grass({
     // Normal
     const normalNode = transformNormalToView(normalVarying);
 
-    return { nodes: { positionNode, colorNode, normalNode } };
-  }, [
-    count,
-    terrainSize,
-    halfSize,
-    cellSize,
-    elevationMap,
-    elevationMapChannel,
-    scaleMap,
-    scaleMapChannel,
-    height,
-    wiggleSpeed,
-    wiggleAmplitude,
-    noiseTexture,
-    windSpeed,
-    windFrequency,
-    bendAmplitude,
-    terrainColorTexture,
-    terrainNormalTexture,
-    cullThreshold,
-  ]);
+    return { positionNode, colorNode, normalNode };
+  }, []);
 
   // Debug
   useDebugControls("🏞️ Stylized Nature Scene", {
@@ -435,11 +412,11 @@ function Water({ elevationMap, elevationMapChannel = "r" }: WaterProps) {
       shoreNoiseFrequency: 2,
       shoreAnimationSpeed: 1,
     },
-    "stylized-natuer-scene-lesson-water",
+    "stylized-nature-scene-lesson-water",
   );
 
   // Shader
-  const { nodes } = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     // Color
     const backdropNode = Fn(() => {
       // Depth effect
@@ -499,17 +476,8 @@ function Water({ elevationMap, elevationMapChannel = "r" }: WaterProps) {
       return shore.oneMinus();
     })();
 
-    return { nodes: { backdropNode, backdropAlphaNode } };
-  }, [
-    blurStrength,
-    blurRepeats,
-    colorAbsorption,
-    noiseTexture,
-    shoreNoiseFrequency,
-    shoreAnimationSpeed,
-    elevationMap,
-    elevationMapChannel,
-  ]);
+    return { backdropNode, backdropAlphaNode };
+  }, []);
 
   // Debug
   useDebugControls("🏞️ Stylized Nature Scene", {

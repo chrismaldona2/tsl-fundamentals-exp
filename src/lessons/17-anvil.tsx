@@ -2,15 +2,14 @@ import {
   useTexture,
   useFrame,
   useThree,
-  useUniforms,
   type ThreeElements,
-} from "@react-three/fiber/webgpu";
+} from "@react-three/fiber";
+import { useLocalNodes, useUniforms } from "@react-three/tsl";
 import {
   useCallback,
   useEffect,
   useImperativeHandle,
   useLayoutEffect,
-  useMemo,
   useRef,
   type Ref,
 } from "react";
@@ -160,7 +159,7 @@ function Blade({ ref }: { ref?: Ref<BladeHandle> }) {
   );
 
   // Shader
-  const { nodes } = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     // Emissiveness
     const emissiveNode = Fn(() => {
       const mask = grayscale(materialColor.rgb).remapClamp(0, 0.13, 1, 0);
@@ -178,16 +177,9 @@ function Blade({ ref }: { ref?: Ref<BladeHandle> }) {
     })();
 
     return {
-      nodes: { emissiveNode },
+      emissiveNode,
     };
-  }, [
-    impactOffset,
-    impactPropagation,
-    colorCenter,
-    colorEdges,
-    emissiveStrength,
-    effectStrength,
-  ]);
+  }, []);
 
   // API
   useImperativeHandle(
@@ -284,7 +276,7 @@ function Sparkles({ ref }: { ref?: Ref<SparklesHandle> }) {
   );
 
   // Shader
-  const { computeNodes, nodes } = useMemo(() => {
+  const { computeNodes, nodes } = useLocalNodes(() => {
     // Buffers
     const positions = instancedArray(count, "vec3");
     const velocities = instancedArray(count, "vec3");
@@ -355,16 +347,7 @@ function Sparkles({ ref }: { ref?: Ref<SparklesHandle> }) {
       computeNodes: { initCompute, explodeCompute, updateCompute },
       nodes: { positionNode, scaleNode, emissiveNode },
     };
-  }, [
-    origin,
-    groundHeight,
-    size,
-    decay,
-    colorA,
-    colorB,
-    emissiveStrength,
-    sparklesIndex,
-  ]);
+  }, []);
 
   // Initialize particles (hidden)
   useLayoutEffect(() => {
@@ -486,7 +469,7 @@ function Floor(props: ThreeElements["mesh"]) {
   });
 
   // Shader
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
     const mrtNode = mrt({ output, normal: vec4(0) });
 

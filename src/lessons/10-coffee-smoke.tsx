@@ -1,6 +1,7 @@
 import { useGLTF } from "@react-three/drei/webgpu";
-import { type ThreeElements } from "@react-three/fiber/webgpu";
-import { useMemo } from "react";
+import { type ThreeElements } from "@react-three/fiber";
+import { useLocalNodes } from "@react-three/tsl";
+import { useState } from "react";
 import {
   color,
   Fn,
@@ -29,14 +30,14 @@ export default function CoffeeLesson(props: ThreeElements["group"]) {
 }
 
 function Smoke(props: ThreeElements["mesh"]) {
-  const geometry = useMemo(() => {
+  const [geometry] = useState(() => {
     const geo = new PlaneGeometry(1, 1, 16, 64);
     geo.translate(0, 0.5, 0);
     geo.scale(1.5, 6, 1.5);
     return geo;
-  }, []);
+  });
 
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const positionNode = Fn(() => {
       const p = positionLocal.toVar();
 

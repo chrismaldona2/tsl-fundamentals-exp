@@ -1,5 +1,5 @@
-import { useTexture, type ThreeElements } from "@react-three/fiber/webgpu";
-import { useMemo } from "react";
+import { useTexture, type ThreeElements } from "@react-three/fiber";
+import { useLocalNodes } from "@react-three/tsl";
 import {
   atan,
   color,
@@ -54,7 +54,7 @@ function Floor(props: ThreeElements["mesh"]) {
     tex.repeat.set(1, 2);
   });
 
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const colorNode = texture(diffuse);
 
     const center = uv().sub(0.5).mul(modelScale.xy);
@@ -84,7 +84,7 @@ function Floor(props: ThreeElements["mesh"]) {
 }
 
 function Pattern01(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const colorNode = vec3(uv().xy, 1);
     return {
       colorNode,
@@ -100,7 +100,7 @@ function Pattern01(props: ThreeElements["mesh"]) {
 }
 
 function Pattern02(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const colorNode = vec3(uv().x);
     return {
       colorNode,
@@ -116,7 +116,7 @@ function Pattern02(props: ThreeElements["mesh"]) {
 }
 
 function Pattern03(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const colorNode = vec3(uv().x.mul(10).fract());
     return {
       colorNode,
@@ -132,7 +132,7 @@ function Pattern03(props: ThreeElements["mesh"]) {
 }
 
 function Pattern04(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const vertical = uv().x.mul(10).fract().step(0.5);
     const horizontal = uv().y.mul(10).fract().step(0.5);
     const colorNode = vec3(vertical.add(horizontal).sub(1).abs());
@@ -151,7 +151,7 @@ function Pattern04(props: ThreeElements["mesh"]) {
 }
 
 function Pattern05(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const colorNode = vec3(uv().sub(0.5).length());
 
     return {
@@ -168,7 +168,7 @@ function Pattern05(props: ThreeElements["mesh"]) {
 }
 
 function Pattern06(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const polarUv = uv().sub(0.5);
     const angle = atan(polarUv.x, polarUv.y);
     const colorNode = vec3(angle.add(PI).div(TWO_PI));
@@ -187,7 +187,7 @@ function Pattern06(props: ThreeElements["mesh"]) {
 }
 
 function Pattern07(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const gridUv = uv().mul(10).floor();
     // const random = hash(gridUv.x.mul(10).add(gridUv.y));
     const random = rand(gridUv);
@@ -208,7 +208,7 @@ function Pattern07(props: ThreeElements["mesh"]) {
 }
 
 function Pattern08(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const noise = mx_noise_float(uv().mul(5)).mul(5);
     const colorNode = vec3(noise.add(time.mul(0.5)).fract().step(0.8));
 
@@ -239,7 +239,7 @@ const palette = Fn(
 );
 
 function Pattern09(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const worleyUv = uv().mul(10);
     const worleyNoise = mx_worley_noise_float(vec3(worleyUv, time));
     const colorNode = palette(
@@ -264,7 +264,7 @@ function Pattern09(props: ThreeElements["mesh"]) {
 }
 
 function Pattern10(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const depthUv = (parallaxUV(uv(), float(0.5)) as Node<"vec3">).xy;
     const causticsInput = vec3(depthUv.mul(6), time.mul(0.3));
     const causticsNoise = mx_worley_noise_float(causticsInput).pow(3);

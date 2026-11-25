@@ -2,9 +2,9 @@ import {
   useFrame,
   useTexture,
   useThree,
-  useUniforms,
   type ThreeElements,
-} from "@react-three/fiber/webgpu";
+} from "@react-three/fiber";
+import { useLocalNodes, useUniforms } from "@react-three/tsl";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { folder, useDebugControls } from "../debug/use-debug-controls";
 import {
@@ -51,8 +51,8 @@ export default function ClairObscurTitleLesson(props: ThreeElements["group"]) {
 }
 
 function Petals() {
-  const renderer = useThree((s) => s.renderer);
   const count = 1500;
+  const renderer = useThree((s) => s.renderer);
 
   // Assets load
   const alphaTexture = useTexture("/textures/petals-alpha-map.png");
@@ -101,7 +101,7 @@ function Petals() {
   }, [geometry]);
 
   // Shader
-  const { nodes, computeNodes } = useMemo(() => {
+  const { nodes, computeNodes } = useLocalNodes(() => {
     // Buffers
     const scaleBuffer = range(0.5, 1);
     const colorMixBuffer = range(0, 1);
@@ -173,16 +173,7 @@ function Petals() {
       nodes: { positionNode, colorNode },
       computeNodes: { initPetals, updatePetals },
     };
-  }, [
-    colorA,
-    colorB,
-    scale,
-    radius,
-    windStrength,
-    windFrequency,
-    windVariation,
-    spawnPosition,
-  ]);
+  }, []);
 
   // Cursor follow
   useCursorPlaneIntersection(spawnPosition.value);
@@ -299,17 +290,15 @@ function Title() {
   });
 
   // Shader
-  const { nodes } = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     // Color
     const centerDistance = uv().sub(vec2(0.5, 0.6)).length().mul(1.5).min(1);
     const colorNode = mix(colorA, colorB, centerDistance);
 
     return {
-      nodes: {
-        colorNode,
-      },
+      colorNode,
     };
-  }, [colorA, colorB]);
+  }, []);
 
   return (
     <mesh position-z={-0.05} receiveShadow={true} visible={true}>

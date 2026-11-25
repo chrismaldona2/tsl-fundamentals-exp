@@ -1,5 +1,5 @@
-import type { ThreeElements } from "@react-three/fiber/webgpu";
-import { useMemo } from "react";
+import type { ThreeElements } from "@react-three/fiber";
+import { useLocalNodes } from "@react-three/tsl";
 import {
   uv,
   mx_noise_vec3,
@@ -20,7 +20,7 @@ export default function NodeMaterialsLesson(props: ThreeElements["group"]) {
 }
 
 function Floor(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
     const colorNode = mx_noise_vec3(uv().mul(4)).toVarying();
 
@@ -39,7 +39,7 @@ function Floor(props: ThreeElements["mesh"]) {
 }
 
 function TorusKnot(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const pattern = checker(uv().add(time.mul(0.1)).mul(vec2(30, 5)));
     const colorNode = vec3(pattern, 0, 0);
 

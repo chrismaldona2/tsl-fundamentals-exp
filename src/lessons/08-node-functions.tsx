@@ -1,5 +1,5 @@
-import { useUniforms, type ThreeElements } from "@react-three/fiber/webgpu";
-import { useMemo } from "react";
+import { type ThreeElements } from "@react-three/fiber";
+import { useLocalNodes, useUniforms } from "@react-three/tsl";
 import { uv, float, vec3, vec2, bool, Fn, If, uint, Loop } from "three/tsl";
 import type { Node } from "three/webgpu";
 import { folder, useDebugControls } from "../debug/use-debug-controls";
@@ -105,7 +105,7 @@ function Floor(props: ThreeElements["mesh"]) {
   );
 
   // Shader
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const colorNode = vec3(
       circles({
         radius,
@@ -140,12 +140,8 @@ function Floor(props: ThreeElements["mesh"]) {
 }
 
 function TorusKnot(props: ThreeElements["mesh"]) {
-  const nodes = useMemo(() => {
-    const colorNode = vec3(1);
-
-    return {
-      colorNode,
-    };
+  const nodes = useLocalNodes(() => {
+    return { colorNode: vec3(1) };
   }, []);
 
   return (

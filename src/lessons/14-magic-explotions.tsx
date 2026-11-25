@@ -1,9 +1,5 @@
-import {
-  useFrame,
-  useTexture,
-  useUniforms,
-  type ThreeElements,
-} from "@react-three/fiber/webgpu";
+import { useFrame, useTexture, type ThreeElements } from "@react-three/fiber";
+import { useLocalNodes, useUniforms } from "@react-three/tsl";
 import {
   createContext,
   useCallback,
@@ -106,7 +102,7 @@ function ExplosionsSystem({
   });
 
   // Shader nodes
-  const { nodes, triggerExplotion } = useMemo(() => {
+  const { nodes, triggerExplotion } = useLocalNodes(() => {
     // Buffers setup
     const positionsBuffer = uniformArray<"vec3">([], "vec3");
     const radiusBuffer = uniformArray<"float">([], "float");
@@ -332,7 +328,7 @@ function Floor(props: ThreeElements["mesh"]) {
     tex.colorSpace = SRGBColorSpace;
   });
 
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
     const mrtNode = mrt({ output, normal: vec4(0) });
 

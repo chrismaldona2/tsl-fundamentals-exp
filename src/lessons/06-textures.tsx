@@ -1,5 +1,5 @@
-import { useTexture, type ThreeElements } from "@react-three/fiber/webgpu";
-import { useMemo, useRef } from "react";
+import { useTexture, type ThreeElements } from "@react-three/fiber";
+import { useRef } from "react";
 import {
   type Mesh,
   MirroredRepeatWrapping,
@@ -18,6 +18,7 @@ import {
   positionWorld,
 } from "three/tsl";
 import TransformControls from "../components/transform-controls";
+import { useLocalNodes } from "@react-three/tsl";
 
 export default function TexturesLesson(props: ThreeElements["group"]) {
   return (
@@ -35,7 +36,7 @@ function Floor(props: ThreeElements["mesh"]) {
     tex.wrapT = MirroredRepeatWrapping;
   });
 
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const colorNode = vibrance(
       texture(diffuse, rotateUV(uv().mul(3), float(-1.65), vec2(0))),
       0.1,
@@ -65,7 +66,7 @@ function TorusKnot(props: ThreeElements["mesh"]) {
     tex.wrapT = MirroredRepeatWrapping;
   });
 
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const colorNode = grayscale(
       vibrance(
         triplanarTexture(

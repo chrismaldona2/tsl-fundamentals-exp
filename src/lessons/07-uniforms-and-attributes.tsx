@@ -1,6 +1,7 @@
 // oxlint-disable react/purity
-import { useUniforms, type ThreeElements } from "@react-three/fiber/webgpu";
-import { useMemo } from "react";
+import { type ThreeElements } from "@react-three/fiber";
+import { useLocalNodes, useUniforms } from "@react-three/tsl";
+import { useMemo, useState } from "react";
 import { BufferAttribute, PlaneGeometry } from "three/webgpu";
 import { uv, positionWorld, time, mix, bufferAttribute } from "three/tsl";
 import { folder, useDebugControls } from "../debug/use-debug-controls";
@@ -17,11 +18,8 @@ export default function UniformsAndAttributesLesson(
 }
 
 function Floor(props: ThreeElements["mesh"]) {
-  const { geometry, nodes } = useMemo(() => {
-    // Geometry generation
-    const geometry = new PlaneGeometry(10, 10, 25, 25);
-
-    // Shader nodes
+  const [geometry] = useState(() => new PlaneGeometry(10, 10, 25, 25));
+  const nodes = useMemo(() => {
     const vertices = geometry.attributes.position.count;
     const randomArray = new Float32Array(vertices * 3);
     for (let i = 0; i < vertices; i++) {
@@ -34,13 +32,10 @@ function Floor(props: ThreeElements["mesh"]) {
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
 
     return {
-      geometry,
-      nodes: {
-        colorNode,
-        opacityNode,
-      },
+      colorNode,
+      opacityNode,
     };
-  }, []);
+  }, [geometry]);
 
   return (
     <mesh
@@ -67,7 +62,7 @@ function TorusKnot(props: ThreeElements["mesh"]) {
   );
 
   // Shader
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const pattern = positionWorld.y.mul(frequency).sub(time.mul(speed)).fract();
     const colorNode = mix(topColor, bottomColor, pattern);
 

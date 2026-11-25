@@ -1,5 +1,6 @@
-import { useFrame, useThree, useUniforms } from "@react-three/fiber/webgpu";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useLocalNodes, useUniforms } from "@react-three/tsl";
+import { useLayoutEffect, useRef, useState } from "react";
 import {
   deltaTime,
   dot,
@@ -100,7 +101,7 @@ export default function SpheresParticlesPhysicsLesson() {
   });
 
   // Shader
-  const { nodes, computeNodes } = useMemo(() => {
+  const { nodes, computeNodes } = useLocalNodes(() => {
     // Buffers
     const positionsBuffer = instancedArray(count, "vec3");
     const velocitiesBuffer = instancedArray(count, "vec3");
@@ -218,21 +219,7 @@ export default function SpheresParticlesPhysicsLesson() {
       nodes: { positionNode, emissiveNode, colorNode },
       computeNodes: { initCompute, updateCompute },
     };
-  }, [
-    spheresColor,
-    emissiveColor,
-    radius,
-    gravityStrength,
-    impactDamping,
-    generalDamping,
-    heatDamping,
-    heatImpactStrength,
-    cursorPosition,
-    cursorVelocity,
-    cursorRadius,
-    cursorStrength,
-    cursorHeatImpactStrength,
-  ]);
+  }, []);
 
   // Initialization
   useLayoutEffect(() => {

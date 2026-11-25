@@ -1,5 +1,4 @@
-import { type ThreeElements, useTexture } from "@react-three/fiber/webgpu";
-import { useMemo } from "react";
+import { type ThreeElements, useTexture } from "@react-three/fiber";
 import { SRGBColorSpace } from "three/webgpu";
 import {
   uv,
@@ -14,6 +13,7 @@ import {
   float,
   positionLocal,
 } from "three/tsl";
+import { useLocalNodes } from "@react-three/tsl";
 
 export default function SpritesLesson(props: ThreeElements["group"]) {
   return (
@@ -25,14 +25,17 @@ export default function SpritesLesson(props: ThreeElements["group"]) {
 }
 
 export function Sprites(props: ThreeElements["sprite"]) {
-  const { nodes } = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const positionNode = range(vec3(-3, 0, -3), vec3(3, 3, 3));
     const scaleNode = range(0.01, 0.03);
     const colorNode = vec3(uv(), 1);
     const rotationNode = time.mul(hash(instanceIndex).sub(0.5));
 
     return {
-      nodes: { positionNode, scaleNode, colorNode, rotationNode },
+      positionNode,
+      scaleNode,
+      colorNode,
+      rotationNode,
     };
   }, []);
 
@@ -44,14 +47,17 @@ export function Sprites(props: ThreeElements["sprite"]) {
 }
 
 export function SpritesWithMesh(props: ThreeElements["mesh"]) {
-  const { nodes } = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const positionNode = range(vec3(-3, 0, -3), vec3(3, 3, 3));
     const scaleNode = range(0.2, 0.5);
     const colorNode = vec3(uv(), 1);
     const rotationNode = time.mul(hash(instanceIndex).sub(0.5));
 
     return {
-      nodes: { positionNode, scaleNode, colorNode, rotationNode },
+      positionNode,
+      scaleNode,
+      colorNode,
+      rotationNode,
     };
   }, []);
 
@@ -64,7 +70,7 @@ export function SpritesWithMesh(props: ThreeElements["mesh"]) {
 }
 
 function StressTest(props: ThreeElements["sprite"]) {
-  const { nodes } = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const positionNode = range(vec3(-3, 0, -3), vec3(3, 3, 3));
     const scaleNode = float(0.005);
     const colorNode = positionLocal
@@ -72,7 +78,9 @@ function StressTest(props: ThreeElements["sprite"]) {
       .toVertexStage();
 
     return {
-      nodes: { positionNode, scaleNode, colorNode },
+      positionNode,
+      scaleNode,
+      colorNode,
     };
   }, []);
 
@@ -88,7 +96,7 @@ function Floor(props: ThreeElements["mesh"]) {
     tex.colorSpace = SRGBColorSpace;
   });
 
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
     const mrtNode = mrt({ output, normal: vec4(0) });
 

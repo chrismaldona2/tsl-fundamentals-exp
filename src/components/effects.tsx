@@ -1,4 +1,4 @@
-import { useRenderPipeline, useUniforms } from "@react-three/fiber/webgpu";
+import { useRenderPipeline, useUniforms } from "@react-three/tsl";
 import { chromaticAberration } from "three/examples/jsm/tsl/display/ChromaticAberrationNode.js";
 import { bloom } from "three/examples/jsm/tsl/display/BloomNode.js";
 import { fxaa } from "three/examples/jsm/tsl/display/FXAANode.js";
@@ -23,7 +23,7 @@ import { shatter } from "../nodes/shatter-node";
 const toVec4 = (node: unknown) => node as Node<"vec4">;
 
 export default function Effects() {
-  // Uniforms
+  // Uniformsnp
   const uniforms = usePostProcessingUniforms();
 
   // Main pipeline

@@ -1,8 +1,9 @@
-import { useTexture, type ThreeElements } from "@react-three/fiber/webgpu";
-import { useMemo, useRef } from "react";
+import { useTexture, type ThreeElements } from "@react-three/fiber";
+import { useRef } from "react";
 import { Mesh, SRGBColorSpace } from "three/webgpu";
 import { uv, positionLocal, vec4 } from "three/tsl";
 import TransformControls from "../components/transform-controls";
+import { useLocalNodes } from "@react-three/tsl";
 
 export default function VariablesAndReferencesLesson(
   props: ThreeElements["group"],
@@ -20,7 +21,7 @@ function Floor(props: ThreeElements["mesh"]) {
     tex.colorSpace = SRGBColorSpace;
   });
 
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
     return {
       opacityNode,
@@ -38,7 +39,7 @@ function Floor(props: ThreeElements["mesh"]) {
 function TorusKnot(props: ThreeElements["mesh"]) {
   const meshRef = useRef<Mesh>(null);
 
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const outputNode = vec4(positionLocal, 1);
     return {
       outputNode,

@@ -1,9 +1,5 @@
-import {
-  useFrame,
-  useTexture,
-  useUniforms,
-  type ThreeElements,
-} from "@react-three/fiber/webgpu";
+import { useFrame, useTexture, type ThreeElements } from "@react-three/fiber";
+import { useLocalNodes, useUniforms } from "@react-three/tsl";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import {
   Euler,
@@ -121,7 +117,7 @@ export function Method_2(props: ThreeElements["group"]) {
     meshRef.current.instanceMatrix.needsUpdate = true;
   }, []);
 
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     return {
       positionNode: Fn(() => {
         // Wave
@@ -174,7 +170,7 @@ export function Method_3(props: ThreeElements["group"]) {
   });
 
   // Shader
-  const nodes = useMemo(
+  const nodes = useLocalNodes(
     () => ({
       positionNode: Fn(() => {
         const progress = instanceIndex.toFloat().div(instanceCount.sub(1));
@@ -211,7 +207,7 @@ export function Method_4(props: ThreeElements["group"]) {
   const count = 5;
 
   // Shader
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     // Buffers creation
     const rotationsArray = new Float32Array(count * 1);
     const rotationsBuffer = new InstancedBufferAttribute(rotationsArray, 1);
@@ -276,7 +272,7 @@ export function Method_5(props: ThreeElements["group"]) {
   const count = 5;
 
   // Shader
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     // Buffers creation
     const array = new Float32Array(count * 4);
     const buffer = new InstancedInterleavedBuffer(array, 4);
@@ -341,7 +337,7 @@ export function Method_6(props: ThreeElements["group"]) {
   const count = 5;
 
   // Shader
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     // Buffers creation
     const matricesArray = new Float32Array(count * 16);
     const matricesBuffer = new InstancedBufferAttribute(matricesArray, 16);
@@ -392,7 +388,7 @@ export function Method_7(props: ThreeElements["group"]) {
   const count = 5;
 
   // Shader
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const positionsArray: Vector3[] = [];
     const rotationsArray: number[] = [];
 
@@ -450,7 +446,7 @@ export function Method_8(props: ThreeElements["group"]) {
   const count = 5;
 
   // Shader
-  const { nodes, updateCompute } = useMemo(() => {
+  const { nodes, updateCompute } = useLocalNodes(() => {
     // Buffer
     const positionStorage = instancedArray(count, "vec3");
 
@@ -495,7 +491,7 @@ function Floor(props: ThreeElements["mesh"]) {
     tex.colorSpace = SRGBColorSpace;
   });
 
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
     const mrtNode = mrt({ output, normal: vec4(0) });
 

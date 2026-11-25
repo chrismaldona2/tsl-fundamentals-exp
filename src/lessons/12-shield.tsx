@@ -1,10 +1,5 @@
-import {
-  useFrame,
-  useNodes,
-  useTexture,
-  useUniforms,
-  type ThreeElements,
-} from "@react-three/fiber/webgpu";
+import { useFrame, useTexture, type ThreeElements } from "@react-three/fiber";
+import { useUniforms, useNodes, useLocalNodes } from "@react-three/tsl";
 import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 import {
   AdditiveBlending,
@@ -18,7 +13,6 @@ import {
   Vector3,
   Vector4,
   type MeshStandardNodeMaterial,
-  type Node,
 } from "three/webgpu";
 import {
   add,
@@ -58,7 +52,6 @@ export default function ShieldLesson(props: ThreeElements["group"]) {
   );
 }
 
-type ShieldNodeScope = { junctionNode: Node<"vec3"> };
 const shieldRaycastEnv = {
   inverse: new Matrix4(),
   ray: new Ray(),
@@ -163,7 +156,7 @@ function Shield(props: ThreeElements["mesh"]) {
   }, []);
 
   // Shader
-  const nodes = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     // Scale
     const positionNode = positionLocal.mul(radius);
 
@@ -244,7 +237,7 @@ function Shield(props: ThreeElements["mesh"]) {
   ]);
 
   // Shared nodes
-  useNodes<ShieldNodeScope>(() => {
+  useNodes(() => {
     const junctionNode = Fn(() => {
       const sdf = positionWorld.distance(shieldCenter).sub(radius);
       const junctionMask = sdf
@@ -305,8 +298,8 @@ function Floor(props: ThreeElements["mesh"]) {
   });
 
   // Shader
-  const shieldNodes = useNodes<ShieldNodeScope>("shield");
-  const nodes = useMemo(() => {
+  const shieldNodes = useNodes("shield");
+  const nodes = useLocalNodes(() => {
     const opacityNode = uv().sub(0.5).length().smoothstep(0.5, 0.2);
     const mrtNode = mrt({ output, normal: vec4(0) });
     const emissiveNode = shieldNodes.junctionNode;
@@ -324,7 +317,7 @@ function Floor(props: ThreeElements["mesh"]) {
 
 function Anvil(props: ThreeElements["group"]) {
   const glb = useAnvilGLB();
-  const shieldNodes = useNodes<ShieldNodeScope>("shield");
+  const shieldNodes = useNodes("shield");
 
   useLayoutEffect(() => {
     glb.scene.traverse((child) => {

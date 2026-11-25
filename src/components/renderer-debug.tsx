@@ -1,4 +1,4 @@
-import { useThree } from "@react-three/fiber/webgpu";
+import { useThree } from "@react-three/fiber";
 import { useDebugControls } from "../debug/use-debug-controls";
 import {
   ACESFilmicToneMapping,

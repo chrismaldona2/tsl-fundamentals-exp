@@ -1,5 +1,5 @@
 import { useEffect, useRef, useMemo, type RefObject } from "react";
-import { useThree } from "@react-three/fiber/webgpu";
+import { useThree } from "@react-three/fiber";
 import {
   OrbitControls,
   TransformControls as TransformControlsImpl,

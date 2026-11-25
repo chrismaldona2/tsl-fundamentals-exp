@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { AdditiveBlending } from "three";
 import {
   float,
@@ -13,12 +12,13 @@ import {
   vec3,
 } from "three/tsl";
 import { randomSphericalPosition } from "../nodes/random";
+import { useLocalNodes } from "@react-three/tsl";
 
 export default function Galaxy() {
   const count = 10000;
 
   // Shader
-  const { nodes } = useMemo(() => {
+  const nodes = useLocalNodes(() => {
     // Varyings
     const progress = varying(float(0));
 
@@ -72,7 +72,9 @@ export default function Galaxy() {
     })();
 
     return {
-      nodes: { positionNode, scaleNode, colorNode },
+      positionNode,
+      scaleNode,
+      colorNode,
     };
   }, []);
 
