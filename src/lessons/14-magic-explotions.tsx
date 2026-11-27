@@ -37,7 +37,7 @@ import {
   vec3,
   vec4,
 } from "three/tsl";
-import { useDebugControls } from "../debug/use-debug-controls";
+import { useDebugControls } from "../debug";
 import gsap from "gsap";
 
 export default function MagicExplotionsLesson(props: ThreeElements["group"]) {

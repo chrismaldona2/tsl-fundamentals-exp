@@ -38,7 +38,7 @@ import {
   vec3,
   vec4,
 } from "three/tsl";
-import { folder, useDebugControls } from "../debug/use-debug-controls";
+import { folder, useDebugControls } from "../debug";
 import { useAnvilGLB } from "../hooks/use-anvil-glb";
 
 export default function AnvilLesson(props: ThreeElements["group"]) {

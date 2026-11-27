@@ -6,7 +6,7 @@ import {
 } from "@react-three/fiber";
 import { useLocalNodes, useUniforms } from "@react-three/tsl";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { folder, useDebugControls } from "../debug/use-debug-controls";
+import { folder, useDebugControls } from "../debug";
 import {
   uv,
   vec2,

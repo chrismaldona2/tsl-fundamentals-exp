@@ -1,5 +1,5 @@
 import { useThree } from "@react-three/fiber";
-import { useDebugControls } from "../debug/use-debug-controls";
+import { useDebugControls } from "../debug";
 import {
   ACESFilmicToneMapping,
   AgXToneMapping,

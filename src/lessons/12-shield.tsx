@@ -37,7 +37,7 @@ import {
   vec2,
   vec4,
 } from "three/tsl";
-import { useDebugControls } from "../debug/use-debug-controls";
+import { useDebugControls } from "../debug";
 import TransformControls from "../components/transform-controls";
 import gsap from "gsap";
 import { useAnvilGLB } from "../hooks/use-anvil-glb";

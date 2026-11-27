@@ -29,7 +29,7 @@ import {
   uv,
   vec4,
 } from "three/tsl";
-import { useDebugControls } from "../debug/use-debug-controls";
+import { useDebugControls } from "../debug";
 
 export default function InstancesLesson(props: ThreeElements["group"]) {
   return (

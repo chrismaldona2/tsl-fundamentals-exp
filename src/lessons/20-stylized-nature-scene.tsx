@@ -45,7 +45,7 @@ import {
   viewportLinearDepth,
   viewportSharedTexture,
 } from "three/tsl";
-import { folder, useDebugControls } from "../debug/use-debug-controls";
+import { folder, useDebugControls } from "../debug";
 import { hashBlur } from "three/examples/jsm/tsl/display/hashBlur.js";
 
 export default function StylizedNatureSceneLesson(

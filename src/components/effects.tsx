@@ -16,7 +16,7 @@ import {
   vec2,
 } from "three/tsl";
 import type { Node } from "three/webgpu";
-import { folder, useDebugControls } from "../debug/use-debug-controls";
+import { folder, useDebugControls } from "../debug";
 import { shatter } from "../nodes/shatter-node";
 
 /** Helper to explicitly type nodes as vec4 after verifying their internal output.*/

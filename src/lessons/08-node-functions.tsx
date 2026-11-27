@@ -2,7 +2,7 @@ import { type ThreeElements } from "@react-three/fiber";
 import { useLocalNodes, useUniforms } from "@react-three/tsl";
 import { uv, float, vec3, vec2, bool, Fn, If, uint, Loop } from "three/tsl";
 import type { Node } from "three/webgpu";
-import { folder, useDebugControls } from "../debug/use-debug-controls";
+import { folder, useDebugControls } from "../debug";
 
 export default function NodeFunctionsLesson(props: ThreeElements["group"]) {
   return (

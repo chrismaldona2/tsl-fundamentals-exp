@@ -14,7 +14,7 @@ import {
   positionLocal,
   vec3,
 } from "three/tsl";
-import { useDebugControls } from "../debug/use-debug-controls";
+import { useDebugControls } from "../debug";
 import { Vector3, Plane, Raycaster, type Mesh } from "three/webgpu";
 
 export default function SpheresParticlesPhysicsLesson() {

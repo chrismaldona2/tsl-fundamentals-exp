@@ -1,4 +1,4 @@
-import type { Group, NumberOptions } from "./types";
+import type { Group, NumberOptions } from "../types";
 
 interface ItemNode {
   readonly parent: ItemNode | null;
@@ -45,8 +45,8 @@ export function assertRuntimeGroup(
   ) {
     throw new Error(
       "[DebugControls] Unsupported three Inspector: ParametersGroup no longer " +
-        "exposes `objects`, `paramList` and `parameters`. " +
-        "Update inspector-internals.ts.",
+        "exposes `objects`, `paramList`, and `parameters`. " +
+        "Update adapter/internals.ts.",
     );
   }
 }
@@ -82,6 +82,11 @@ export function removeRoot(group: Group): void {
   if (groups.length === 0) group.parameters.hide();
 }
 
+/**
+ * Patches min/max/step directly on `ValueNumber.input` because
+ * `ParametersGroup.addNumber` does not forward `step` and `ValueNumber`
+ * reads `input.min`, `input.max`, and `input.step` dynamically on change/drag.
+ */
 export function applyNumberLimits(
   editor: unknown,
   limits: NumberOptions,
@@ -93,7 +98,7 @@ export function applyNumberLimits(
   if (!(input instanceof HTMLInputElement)) {
     throw new Error(
       "[DebugControls] ValueNumber no longer exposes `input`. " +
-        "Update inspector-internals.ts.",
+        "Update adapter/internals.ts.",
     );
   }
 

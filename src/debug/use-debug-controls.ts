@@ -1,58 +1,70 @@
+import { useThree } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { mountControls } from "./core";
-import { mountRoot } from "./inspector";
+import { InspectorAdapter } from "./adapter/inspector";
+import { mountControls } from "./core/mount";
 import type {
-  Dispose,
+  DebugControlsOptions,
   FolderNode,
   FolderOptions,
+  MountedControls,
   Schema,
   SchemaOf,
 } from "./types";
 
-export function folder<const T extends Record<string, unknown>>(
-  children: SchemaOf<T>,
-  options?: FolderOptions,
-): FolderNode;
-
-export function folder(children: Schema, options?: FolderOptions): FolderNode {
-  return { isFolder: true, children, options };
-}
-
 const NO_DEPS: readonly unknown[] = [];
 
-export function useDebugControls<const T extends Record<string, unknown>>(
-  name: string,
-  schema: SchemaOf<T>,
-  options?: FolderOptions,
-  deps?: readonly unknown[],
-): void;
+export function folder<
+  T extends Record<string, unknown>,
+  const P extends { readonly [K in keyof T]?: PropertyKey },
+>(children: SchemaOf<T, P>, options?: FolderOptions): FolderNode {
+  return {
+    isFolder: true,
+    children: children as unknown as Schema,
+    options,
+  };
+}
 
-export function useDebugControls(
-  name: string,
-  schema: Schema,
-  options?: FolderOptions,
-  deps: readonly unknown[] = NO_DEPS,
-): void {
-  const latest = useRef<Schema>(schema);
+export function useDebugControls<
+  T extends Record<string, unknown>,
+  const P extends { readonly [K in keyof T]?: PropertyKey },
+>(name: string, schema: SchemaOf<T, P>, options?: DebugControlsOptions): void {
+  const renderer = useThree((s) => s.renderer);
+  const enabled = options?.enabled ?? true;
+  const collapsed = options?.collapsed;
+  const deps = options?.deps ?? NO_DEPS;
+
+  const latest = useRef<Schema>(schema as unknown as Schema);
+  const mounted = useRef<MountedControls | null>(null);
+
   useLayoutEffect(() => {
-    latest.current = schema;
+    latest.current = schema as unknown as Schema;
   });
 
   useEffect(() => {
-    const root = mountRoot(name, options);
+    if (!enabled || !renderer) return;
 
-    let release: Dispose;
+    const adapter = InspectorAdapter.forRenderer(renderer);
+    const root = adapter.acquireRoot(name, { collapsed });
+
+    let controls: MountedControls;
     try {
-      release = mountControls(root.group, () => latest.current);
+      controls = mountControls(adapter, root.group, () => latest.current);
     } catch (error) {
       root.dispose();
       throw error;
     }
 
+    mounted.current = controls;
+
     return () => {
-      release();
+      mounted.current = null;
+      controls.dispose();
       root.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, ...deps]);
+  }, [renderer, name, enabled, ...deps]);
+
+  useEffect(() => {
+    mounted.current?.sync();
+  });
 }
